@@ -7,11 +7,21 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppLayout } from "@/components/Layout/AppLayout";
+import { ChatWidget } from "@/components/AIChat/ChatWidget";
 
 // Pages
+import { LoginSelect } from "@/pages/LoginSelect";
+import { AdminLogin } from "@/pages/AdminLogin";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { Dashboard } from "@/pages/Dashboard";
+import { UserDashboard } from "@/pages/UserDashboard";
+import { AdminDashboard } from "@/pages/AdminDashboard";
+import { Profile } from "@/pages/Profile";
+import { Settings } from "@/pages/Settings";
+import { AuditLog } from "@/pages/AuditLog";
+import { TeamManagement } from "@/pages/TeamManagement";
+import { EvidenceTracking } from "@/pages/EvidenceTracking";
 import { EvidenceUpload } from "@/pages/EvidenceUpload";
 import { EvidenceList } from "@/pages/EvidenceList";
 import { EvidenceDetail } from "@/pages/EvidenceDetail";
@@ -19,7 +29,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -39,7 +49,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  return <AppLayout>{children}</AppLayout>;
+  if (adminOnly && user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <AppLayout>
+      {children}
+      <ChatWidget />
+    </AppLayout>
+  );
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
@@ -59,10 +78,24 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
+    // Role-based redirect
+    if (user.role === 'admin') {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
+}
+
+function DashboardRoute() {
+  const { user } = useAuth();
+  
+  if (user?.role === 'admin') {
+    return <AdminDashboard />;
+  }
+  
+  return <UserDashboard />;
 }
 
 const App = () => (
@@ -77,6 +110,16 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/login" element={
                 <PublicRoute>
+                  <LoginSelect />
+                </PublicRoute>
+              } />
+              <Route path="/login/admin" element={
+                <PublicRoute>
+                  <AdminLogin />
+                </PublicRoute>
+              } />
+              <Route path="/login/user" element={
+                <PublicRoute>
                   <Login />
                 </PublicRoute>
               } />
@@ -86,12 +129,34 @@ const App = () => (
                 </PublicRoute>
               } />
               
-              {/* Protected Routes */}
+              {/* Protected Routes - General */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <DashboardRoute />
                 </ProtectedRoute>
               } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/audit" element={
+                <ProtectedRoute>
+                  <AuditLog />
+                </ProtectedRoute>
+              } />
+              <Route path="/tracking" element={
+                <ProtectedRoute>
+                  <EvidenceTracking />
+                </ProtectedRoute>
+              } />
+              
+              {/* Evidence Management Routes */}
               <Route path="/upload" element={
                 <ProtectedRoute>
                   <EvidenceUpload />
@@ -108,36 +173,24 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
-              {/* Placeholder routes for remaining features */}
+              {/* Team Management (Available to all users) */}
               <Route path="/team" element={
                 <ProtectedRoute>
-                  <div className="text-center py-20">
-                    <h1 className="text-3xl font-bold gradient-text mb-4">Team Management</h1>
-                    <p className="text-gray-400">Coming soon...</p>
-                  </div>
+                  <TeamManagement />
                 </ProtectedRoute>
               } />
-              <Route path="/audit" element={
-                <ProtectedRoute>
-                  <div className="text-center py-20">
-                    <h1 className="text-3xl font-bold gradient-text mb-4">Audit Log</h1>
-                    <p className="text-gray-400">Coming soon...</p>
-                  </div>
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <div className="text-center py-20">
-                    <h1 className="text-3xl font-bold gradient-text mb-4">Settings</h1>
-                    <p className="text-gray-400">Coming soon...</p>
-                  </div>
+
+              {/* Admin Only Routes */}
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute adminOnly>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
-                <ProtectedRoute>
+                <ProtectedRoute adminOnly>
                   <div className="text-center py-20">
                     <h1 className="text-3xl font-bold gradient-text mb-4">Admin Panel</h1>
-                    <p className="text-gray-400">Coming soon...</p>
+                    <p className="text-gray-400">Advanced administrative controls coming soon...</p>
                   </div>
                 </ProtectedRoute>
               } />

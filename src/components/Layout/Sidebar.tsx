@@ -6,21 +6,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { name: 'Evidence', href: '/evidence', icon: '🗂️' },
-  { name: 'Upload', href: '/upload', icon: '📤' },
-  { name: 'Team', href: '/team', icon: '👥' },
-  { name: 'Audit Log', href: '/audit', icon: '📋' },
-  { name: 'Settings', href: '/settings', icon: '⚙️' },
+  { name: 'Dashboard', href: '/dashboard', icon: '📊', roles: ['admin', 'user', 'auditor'] },
+  { name: 'Evidence', href: '/evidence', icon: '🗂️', roles: ['admin', 'user', 'auditor'] },
+  { name: 'Upload', href: '/upload', icon: '📤', roles: ['admin', 'user'] },
+  { name: 'Tracking', href: '/tracking', icon: '🔍', roles: ['admin', 'user', 'auditor'] },
+  { name: 'Team', href: '/team', icon: '👥', roles: ['admin', 'user', 'auditor'] },
+  { name: 'Audit Log', href: '/audit', icon: '📋', roles: ['admin', 'auditor'] },
+  { name: 'Profile', href: '/profile', icon: '👤', roles: ['admin', 'user', 'auditor'] },
+  { name: 'Settings', href: '/settings', icon: '⚙️', roles: ['admin', 'user', 'auditor'] },
 ];
 
 const adminNavigation = [
-  { name: 'Admin Panel', href: '/admin', icon: '🛠️' },
+  { name: 'Admin Dashboard', href: '/admin/dashboard', icon: '🛠️' },
+  { name: 'Admin Panel', href: '/admin', icon: '🔧' },
 ];
 
 export function Sidebar() {
   const location = useLocation();
   const { user, logout } = useAuth();
+
+  const visibleNavigation = navigation.filter(item => 
+    item.roles.includes(user?.role || 'user')
+  );
 
   return (
     <div className="flex flex-col h-full w-64 glass-card border-r border-white/10">
@@ -35,8 +42,8 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
-        {navigation.map((item) => {
+      <nav className="flex-1 px-4 py-6 space-y-2" role="navigation" aria-label="Main navigation">
+        {visibleNavigation.map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <Link
@@ -48,8 +55,12 @@ export function Sidebar() {
                   ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30 glow-border'
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
               )}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={`Navigate to ${item.name}`}
             >
-              <span className="mr-3 text-lg">{item.icon}</span>
+              <span className="mr-3 text-lg" role="img" aria-label={`${item.name} icon`}>
+                {item.icon}
+              </span>
               {item.name}
             </Link>
           );
@@ -69,11 +80,15 @@ export function Sidebar() {
                   className={cn(
                     'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30'
+                      ? 'bg-gradient-to-r from-red-500/20 to-orange-500/20 text-white border border-red-500/30'
                       : 'text-gray-300 hover:text-white hover:bg-white/10'
                   )}
+                  aria-current={isActive ? 'page' : undefined}
+                  aria-label={`Navigate to ${item.name}`}
                 >
-                  <span className="mr-3 text-lg">{item.icon}</span>
+                  <span className="mr-3 text-lg" role="img" aria-label={`${item.name} icon`}>
+                    {item.icon}
+                  </span>
                   {item.name}
                 </Link>
               );
@@ -88,14 +103,14 @@ export function Sidebar() {
           <div className="flex items-center space-x-3">
             <img
               src={user?.avatar}
-              alt={user?.name}
+              alt={`${user?.name}'s profile picture`}
               className="w-8 h-8 rounded-full"
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">
                 {user?.name}
               </p>
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-xs text-gray-400 truncate" aria-label={`User role: ${user?.role}`}>
                 {user?.role}
               </p>
             </div>
@@ -106,8 +121,9 @@ export function Sidebar() {
           onClick={logout}
           variant="ghost"
           className="w-full justify-start glass-button text-red-400 hover:text-red-300"
+          aria-label="Log out of your account"
         >
-          <span className="mr-2">🚪</span>
+          <span className="mr-2" role="img" aria-label="Logout icon">🚪</span>
           Logout
         </Button>
       </div>
