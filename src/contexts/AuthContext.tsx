@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -7,6 +6,8 @@ interface User {
   name: string;
   role: 'admin' | 'user' | 'auditor';
   avatar?: string;
+  sector?: 'Healthcare' | 'Legal' | 'Finance' | 'Government' | 'Education' | 'Manufacturing' | 'Technology' | 'Other';
+  organization?: string;
 }
 
 interface AuthContextType {
@@ -31,10 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTimeout(() => {
         setUser({
           id: '1',
-          email: 'user@example.com',
-          name: 'John Doe',
+          email: 'admin@blockevidence.com',
+          name: 'System Administrator',
           role: 'admin',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          sector: 'Technology',
+          organization: 'BlockEvidence Corp'
         });
         setIsLoading(false);
       }, 1000);
@@ -48,12 +51,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Determine role based on email for demo purposes
+    const isAdmin = email.includes('admin');
+    
     const mockUser = {
       id: '1',
       email,
-      name: 'John Doe',
-      role: 'admin' as const,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+      name: isAdmin ? 'System Administrator' : 'John Doe',
+      role: isAdmin ? 'admin' as const : 'user' as const,
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      sector: isAdmin ? 'Technology' as const : 'Legal' as const,
+      organization: isAdmin ? 'BlockEvidence Corp' : 'Legal Associates Inc'
     };
     
     setUser(mockUser);
@@ -71,7 +79,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       name,
       role: 'user' as const,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      sector: 'Other' as const,
+      organization: 'New Organization'
     };
     
     setUser(mockUser);

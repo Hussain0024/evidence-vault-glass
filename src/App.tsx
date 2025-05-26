@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppLayout } from "@/components/Layout/AppLayout";
+import { AdminLayout } from "@/components/Layout/AdminLayout";
 import { ChatWidget } from "@/components/AIChat/ChatWidget";
 
 // Pages
@@ -14,7 +15,6 @@ import { LoginSelect } from "@/pages/LoginSelect";
 import { AdminLogin } from "@/pages/AdminLogin";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
-import { Dashboard } from "@/pages/Dashboard";
 import { UserDashboard } from "@/pages/UserDashboard";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 import { Profile } from "@/pages/Profile";
@@ -53,11 +53,14 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Use different layouts based on user role
+  const LayoutComponent = user.role === 'admin' ? AdminLayout : AppLayout;
+
   return (
-    <AppLayout>
+    <LayoutComponent>
       {children}
       <ChatWidget />
-    </AppLayout>
+    </LayoutComponent>
   );
 }
 
@@ -86,16 +89,6 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
-}
-
-function DashboardRoute() {
-  const { user } = useAuth();
-  
-  if (user?.role === 'admin') {
-    return <AdminDashboard />;
-  }
-  
-  return <UserDashboard />;
 }
 
 const App = () => (
@@ -129,10 +122,10 @@ const App = () => (
                 </PublicRoute>
               } />
               
-              {/* Protected Routes - General */}
+              {/* User Routes - Separate from Admin */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <DashboardRoute />
+                  <UserDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
@@ -143,11 +136,6 @@ const App = () => (
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/audit" element={
-                <ProtectedRoute>
-                  <AuditLog />
                 </ProtectedRoute>
               } />
               <Route path="/tracking" element={
@@ -173,7 +161,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
-              {/* Team Management (Available to all users) */}
+              {/* Team Management */}
               <Route path="/team" element={
                 <ProtectedRoute>
                   <TeamManagement />
@@ -186,11 +174,24 @@ const App = () => (
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="/admin" element={
+              <Route path="/admin/audit" element={
+                <ProtectedRoute adminOnly>
+                  <AuditLog />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users" element={
                 <ProtectedRoute adminOnly>
                   <div className="text-center py-20">
-                    <h1 className="text-3xl font-bold gradient-text mb-4">Admin Panel</h1>
-                    <p className="text-gray-400">Advanced administrative controls coming soon...</p>
+                    <h1 className="text-3xl font-bold gradient-text mb-4">User Management</h1>
+                    <p className="text-gray-400">User management interface coming soon...</p>
+                  </div>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/settings" element={
+                <ProtectedRoute adminOnly>
+                  <div className="text-center py-20">
+                    <h1 className="text-3xl font-bold gradient-text mb-4">System Settings</h1>
+                    <p className="text-gray-400">System configuration interface coming soon...</p>
                   </div>
                 </ProtectedRoute>
               } />
