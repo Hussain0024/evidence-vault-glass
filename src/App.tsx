@@ -11,6 +11,7 @@ import { AdminLayout } from "@/components/Layout/AdminLayout";
 import { ChatWidget } from "@/components/AIChat/ChatWidget";
 
 // Pages
+import { LandingPage } from "@/pages/LandingPage";
 import { LoginSelect } from "@/pages/LoginSelect";
 import { AdminLogin } from "@/pages/AdminLogin";
 import { Login } from "@/pages/Login";
@@ -100,6 +101,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Landing Page - Root Route */}
+              <Route path="/" element={<LandingPage />} />
+              
               {/* Public Routes */}
               <Route path="/login" element={
                 <PublicRoute>
@@ -196,8 +200,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
 
-              {/* Redirects */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
