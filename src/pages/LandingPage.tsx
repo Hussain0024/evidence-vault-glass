@@ -116,7 +116,7 @@ export function LandingPage() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 p-6">
+      <nav className="relative z-10 p-6" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -125,16 +125,32 @@ export function LandingPage() {
             <span className="text-2xl font-bold gradient-text">BlockEvidence</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-white hover:text-blue-400">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-blue-400"
+              aria-label="View platform features"
+            >
               Features
             </Button>
-            <Button variant="ghost" className="text-white hover:text-blue-400">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-blue-400"
+              aria-label="View pricing plans"
+            >
               Pricing
             </Button>
-            <Button variant="ghost" className="text-white hover:text-blue-400">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-blue-400"
+              aria-label="Learn about BlockEvidence"
+            >
               About
             </Button>
-            <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+            <Button 
+              asChild 
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              aria-label="Sign in to your BlockEvidence account"
+            >
               <Link to="/login">Login</Link>
             </Button>
           </div>
@@ -142,12 +158,12 @@ export function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 py-20 px-6">
+      <section className="relative z-10 py-20 px-6" role="main" aria-labelledby="hero-heading">
         <div className="max-w-7xl mx-auto text-center">
           <Badge className="mb-6 bg-blue-500/20 text-blue-300 border-blue-500/30">
             🚀 Next-Gen Evidence Management
           </Badge>
-          <h1 className="text-6xl md:text-7xl font-bold gradient-text mb-8 animate-fade-in">
+          <h1 id="hero-heading" className="text-6xl md:text-7xl font-bold gradient-text mb-8 animate-fade-in">
             Secure Evidence on the
             <span className="block bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
               Blockchain
@@ -162,15 +178,17 @@ export function LandingPage() {
               size="lg" 
               asChild
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 py-4 text-lg"
+              aria-label="Start securing your evidence with BlockEvidence - Sign up now"
             >
               <Link to="/register">
-                Start Securing Evidence <ArrowRight className="ml-2 h-5 w-5" />
+                Start Securing Evidence <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
               </Link>
             </Button>
             <Button 
               size="lg" 
               variant="outline" 
               className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg"
+              aria-label="Watch a demonstration of BlockEvidence platform"
             >
               Watch Demo
             </Button>
@@ -189,10 +207,10 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 py-20 px-6">
+      <section className="relative z-10 py-20 px-6" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-6">
+            <h2 id="features-heading" className="text-4xl font-bold gradient-text mb-6">
               Built for the Future of Evidence
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -218,10 +236,10 @@ export function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="relative z-10 py-20 px-6">
+      <section className="relative z-10 py-20 px-6" aria-labelledby="testimonials-heading">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold gradient-text mb-6">
+            <h2 id="testimonials-heading" className="text-4xl font-bold gradient-text mb-6">
               Trusted by Industry Leaders
             </h2>
             <p className="text-xl text-gray-300">
@@ -259,10 +277,10 @@ export function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 py-20 px-6">
+      <section className="relative z-10 py-20 px-6" aria-labelledby="cta-heading">
         <div className="max-w-4xl mx-auto text-center">
           <div className="glass-card p-12">
-            <h2 className="text-4xl font-bold gradient-text mb-6">
+            <h2 id="cta-heading" className="text-4xl font-bold gradient-text mb-6">
               Ready to Secure Your Evidence?
             </h2>
             <p className="text-xl text-gray-300 mb-8">
@@ -273,15 +291,17 @@ export function LandingPage() {
                 size="lg" 
                 asChild
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 py-4 text-lg"
+                aria-label="Get started with BlockEvidence for free - Create your account"
               >
                 <Link to="/register">
-                  Get Started Free <Zap className="ml-2 h-5 w-5" />
+                  Get Started Free <Zap className="ml-2 h-5 w-5" aria-hidden="true" />
                 </Link>
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
                 className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg"
+                aria-label="Schedule a personalized demonstration of BlockEvidence"
               >
                 Schedule Demo
               </Button>
@@ -291,7 +311,7 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 py-12 px-6">
+      <footer className="relative z-10 border-t border-white/10 py-12 px-6" role="contentinfo">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
@@ -300,12 +320,36 @@ export function LandingPage() {
               </div>
               <span className="text-xl font-bold gradient-text">BlockEvidence</span>
             </div>
-            <div className="flex space-x-6 text-gray-400">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Support</a>
-              <a href="#" className="hover:text-white transition-colors">Contact</a>
-            </div>
+            <nav aria-label="Footer navigation" className="flex space-x-6 text-gray-400">
+              <a 
+                href="#" 
+                className="hover:text-white transition-colors"
+                aria-label="View privacy policy"
+              >
+                Privacy
+              </a>
+              <a 
+                href="#" 
+                className="hover:text-white transition-colors"
+                aria-label="View terms of service"
+              >
+                Terms
+              </a>
+              <a 
+                href="#" 
+                className="hover:text-white transition-colors"
+                aria-label="Get support and help"
+              >
+                Support
+              </a>
+              <a 
+                href="#" 
+                className="hover:text-white transition-colors"
+                aria-label="Contact BlockEvidence team"
+              >
+                Contact
+              </a>
+            </nav>
           </div>
           <div className="mt-8 pt-8 border-t border-white/10 text-center text-gray-400">
             <p>&copy; 2024 BlockEvidence. All rights reserved. Securing evidence with blockchain technology.</p>
