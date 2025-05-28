@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ interface Message {
   type: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  isLoading?: boolean;
 }
 
 export function ChatWidget() {
@@ -25,6 +26,15 @@ export function ChatWidget() {
       timestamp: new Date()
     }
   ]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,19 +47,28 @@ export function ChatWidget() {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const loadingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      type: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      isLoading: true
+    };
+
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
     setMessage('');
 
-    // Simulate AI response
+    // Simulate AI response with proper loading state
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: getAIResponse(message),
+        content: getAIResponse(userMessage.content),
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 1000);
+      
+      setMessages(prev => prev.slice(0, -1).concat(assistantMessage));
+    }, 1500);
   };
 
   const getAIResponse = (userMessage: string): string => {
@@ -111,7 +130,7 @@ export function ChatWidget() {
 
             <CardContent className="flex-1 flex flex-col p-0">
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: '280px' }}>
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
@@ -133,14 +152,27 @@ export function ChatWidget() {
                         {msg.type === 'user' && (
                           <User className="w-4 h-4 text-white mt-0.5 flex-shrink-0" />
                         )}
-                        <p className="text-sm">{msg.content}</p>
+                        <div className="flex-1">
+                          {msg.isLoading ? (
+                            <div className="flex items-center space-x-1">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                            </div>
+                          ) : (
+                            <p className="text-sm">{msg.content}</p>
+                          )}
+                        </div>
                       </div>
-                      <time className="text-xs opacity-70 mt-1 block">
-                        {msg.timestamp.toLocaleTimeString()}
-                      </time>
+                      {!msg.isLoading && (
+                        <time className="text-xs opacity-70 mt-1 block">
+                          {msg.timestamp.toLocaleTimeString()}
+                        </time>
+                      )}
                     </div>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Message Input */}

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Users } from 'lucide-react';
 
 const userNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊', roles: ['user', 'auditor'] },
@@ -39,15 +40,15 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full w-64 glass-card border-r border-blue-500/20 bg-gradient-to-b from-blue-950/30 to-purple-950/30">
-      {/* Logo */}
+      {/* User Panel Logo */}
       <div className="flex items-center px-6 py-4 border-b border-blue-500/20">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">BE</span>
+            <Users className="text-white w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-lg gradient-text">BlockEvidence</span>
-            <p className="text-xs text-blue-400">Evidence Management</p>
+            <span className="font-bold text-lg gradient-text">User Panel</span>
+            <p className="text-xs text-blue-400">BlockEvidence</p>
           </div>
         </div>
       </div>

@@ -1,96 +1,84 @@
 
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, User } from 'lucide-react';
+import { Shield, Users, ArrowLeft } from 'lucide-react';
 
 export function LoginSelect() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl space-y-8 animate-fade-in">
+      <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
+          <Link
+            to="/"
+            className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6 transition-colors"
+            aria-label="Back to homepage"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          
           <div className="flex items-center justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center animate-float">
-              <span className="text-white font-bold text-3xl">BE</span>
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center animate-float">
+              <span className="text-white font-bold text-2xl">BE</span>
             </div>
           </div>
-          <h1 className="text-4xl font-bold gradient-text mb-4">Welcome to BlockEvidence</h1>
-          <p className="text-xl text-gray-400">Secure blockchain-based evidence management</p>
+          <h1 className="text-3xl font-bold gradient-text">Welcome to BlockEvidence</h1>
+          <p className="mt-2 text-gray-400">Choose your access level to continue</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Admin Login */}
-          <Card className="glass-card hover:scale-105 transition-all duration-300">
-            <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-white w-8 h-8" />
+        <div className="space-y-4">
+          <div className="glass-card p-6 space-y-4">
+            <h2 className="text-xl font-semibold text-white mb-4">Select Login Type</h2>
+            
+            <Link to="/login/user" className="block">
+              <div className="p-4 rounded-lg border border-blue-500/30 hover:bg-blue-500/10 transition-colors group">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Users className="text-white w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-white group-hover:text-blue-400 transition-colors">
+                      User Access
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      Evidence management and tracking
+                    </p>
+                  </div>
+                </div>
               </div>
-              <CardTitle className="text-2xl text-white">Administrator</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-400 text-center">
-                Access system administration, user management, and advanced analytics
-              </p>
-              <ul className="text-sm text-gray-300 space-y-2">
-                <li>• System configuration and monitoring</li>
-                <li>• User and team management</li>
-                <li>• Advanced audit capabilities</li>
-                <li>• Analytics and reporting</li>
-              </ul>
-              <Button 
-                asChild 
-                className="w-full bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700"
-                aria-label="Access administrator login"
-              >
-                <Link to="/login/admin">
-                  Admin Login
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* User Login */}
-          <Card className="glass-card hover:scale-105 transition-all duration-300">
-            <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <User className="text-white w-8 h-8" />
-              </div>
-              <CardTitle className="text-2xl text-white">User</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-400 text-center">
-                Upload, manage, and track your evidence with blockchain verification
-              </p>
-              <ul className="text-sm text-gray-300 space-y-2">
-                <li>• Evidence upload and management</li>
-                <li>• Blockchain verification tracking</li>
-                <li>• Personal activity dashboard</li>
-                <li>• Secure file sharing</li>
-              </ul>
-              <Button 
-                asChild 
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                aria-label="Access user login"
-              >
-                <Link to="/login/user">
-                  User Login
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="text-center">
-          <p className="text-gray-400">
-            New to BlockEvidence?{' '}
-            <Link
-              to="/register"
-              className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-              aria-label="Create a new account"
-            >
-              Create an account
             </Link>
-          </p>
+
+            <Link to="/login/admin" className="block">
+              <div className="p-4 rounded-lg border border-red-500/30 hover:bg-red-500/10 transition-colors group">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <Shield className="text-white w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-white group-hover:text-red-400 transition-colors">
+                      Administrator Access
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      System administration and oversight
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          <div className="text-center">
+            <p className="text-gray-400">
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                aria-label="Create a new account"
+              >
+                Sign up here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

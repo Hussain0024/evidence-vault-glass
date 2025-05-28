@@ -19,6 +19,8 @@ import { EvidenceTracking } from "@/pages/EvidenceTracking";
 import { EvidenceUpload } from "@/pages/EvidenceUpload";
 import { EvidenceList } from "@/pages/EvidenceList";
 import { EvidenceDetail } from "@/pages/EvidenceDetail";
+import { AdminUserManagement } from "@/pages/AdminUserManagement";
+import { AdminSystemSettings } from "@/pages/AdminSystemSettings";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
@@ -101,24 +103,42 @@ export function AppRoutes() {
           <AdminDashboard />
         </ProtectedRoute>
       } />
+      <Route path="/admin/users" element={
+        <ProtectedRoute adminOnly>
+          <AdminUserManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/settings" element={
+        <ProtectedRoute adminOnly>
+          <AdminSystemSettings />
+        </ProtectedRoute>
+      } />
       <Route path="/admin/audit" element={
         <ProtectedRoute adminOnly>
           <AuditLog />
         </ProtectedRoute>
       } />
-      <Route path="/admin/users" element={
+      <Route path="/admin/evidence" element={
         <ProtectedRoute adminOnly>
           <div className="text-center py-20">
-            <h1 className="text-3xl font-bold gradient-text mb-4">User Management</h1>
-            <p className="text-gray-400">User management interface coming soon...</p>
+            <h1 className="text-3xl font-bold gradient-text mb-4">Evidence Oversight</h1>
+            <p className="text-gray-400">System-wide evidence monitoring interface coming soon...</p>
           </div>
         </ProtectedRoute>
       } />
-      <Route path="/admin/settings" element={
+      <Route path="/admin/analytics" element={
         <ProtectedRoute adminOnly>
           <div className="text-center py-20">
-            <h1 className="text-3xl font-bold gradient-text mb-4">System Settings</h1>
-            <p className="text-gray-400">System configuration interface coming soon...</p>
+            <h1 className="text-3xl font-bold gradient-text mb-4">System Analytics</h1>
+            <p className="text-gray-400">Advanced analytics dashboard coming soon...</p>
+          </div>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/security" element={
+        <ProtectedRoute adminOnly>
+          <div className="text-center py-20">
+            <h1 className="text-3xl font-bold gradient-text mb-4">Security Center</h1>
+            <p className="text-gray-400">Security monitoring and threat detection coming soon...</p>
           </div>
         </ProtectedRoute>
       } />

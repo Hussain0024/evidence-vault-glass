@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { Users, ArrowLeft } from 'lucide-react';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ export function Login() {
       });
     } catch (error) {
       toast({
-        title: "Error",
+        title: "Login failed",
         description: "Invalid credentials. Please try again.",
         variant: "destructive",
       });
@@ -37,20 +38,29 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
+          <Link
+            to="/login"
+            className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6 transition-colors"
+            aria-label="Back to login selection"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Link>
+          
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center animate-float">
-              <span className="text-white font-bold text-2xl">BE</span>
+              <Users className="text-white w-8 h-8" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold gradient-text">Welcome back</h2>
-          <p className="mt-2 text-gray-400">Sign in to your BlockEvidence account</p>
+          <h1 className="text-3xl font-bold gradient-text">User Login</h1>
+          <p className="mt-2 text-gray-400">Access your evidence management portal</p>
         </div>
 
         <div className="glass-card p-8 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="email" className="text-sm font-medium text-white">
-                Email address
+                Email Address
               </Label>
               <Input
                 id="email"
@@ -78,15 +88,6 @@ export function Login() {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Link
-                to="/forgot-password"
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Forgot your password?
-              </Link>
-            </div>
-
             <Button
               type="submit"
               disabled={isLoading}
@@ -98,13 +99,22 @@ export function Login() {
                   Signing in...
                 </div>
               ) : (
-                'Sign in'
+                'Sign In'
               )}
             </Button>
           </form>
 
           <div className="text-center">
             <p className="text-gray-400">
+              Need admin access?{' '}
+              <Link
+                to="/login/admin"
+                className="text-red-400 hover:text-red-300 font-medium transition-colors"
+              >
+                Admin Login
+              </Link>
+            </p>
+            <p className="text-gray-400 mt-2">
               Don't have an account?{' '}
               <Link
                 to="/register"

@@ -1,5 +1,5 @@
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { AdminLayout } from "@/components/Layout/AdminLayout";
@@ -12,6 +12,10 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
+  
+  // Determine if the current route is an admin route
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   if (isLoading) {
     return (
@@ -30,12 +34,18 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && user.role !== 'admin') {
+  // Redirect admin users from regular routes to admin dashboard
+  if (!adminOnly && !isAdminRoute && user.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  // Redirect non-admin users away from admin routes
+  if ((adminOnly || isAdminRoute) && user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Fix: Use AdminLayout only for admin routes, AppLayout for user routes
-  const LayoutComponent = adminOnly ? AdminLayout : AppLayout;
+  // Use AdminLayout for admin routes, AppLayout for user routes
+  const LayoutComponent = isAdminRoute || adminOnly ? AdminLayout : AppLayout;
 
   return (
     <LayoutComponent>

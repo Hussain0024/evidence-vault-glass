@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
 
 export function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -42,6 +42,15 @@ export function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
+          <Link
+            to="/login"
+            className="inline-flex items-center text-red-400 hover:text-red-300 mb-6 transition-colors"
+            aria-label="Back to login selection"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Link>
+          
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-600 rounded-2xl flex items-center justify-center animate-float">
               <Shield className="text-white w-8 h-8" />
