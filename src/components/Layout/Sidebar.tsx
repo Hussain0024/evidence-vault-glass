@@ -11,7 +11,6 @@ const userNavigation = [
   { name: 'Evidence', href: '/evidence', icon: '🗂️', roles: ['user', 'auditor'] },
   { name: 'Upload', href: '/upload', icon: '📤', roles: ['user'] },
   { name: 'Tracking', href: '/tracking', icon: '🔍', roles: ['user', 'auditor'] },
-  { name: 'Team', href: '/team', icon: '👥', roles: ['user', 'auditor'] },
   { name: 'Profile', href: '/profile', icon: '👤', roles: ['user', 'auditor'] },
   { name: 'Settings', href: '/settings', icon: '⚙️', roles: ['user', 'auditor'] },
 ];
@@ -38,11 +37,18 @@ export function Sidebar() {
     return colors[sector as keyof typeof colors] || colors.Other;
   };
 
+  const handleLogoClick = () => {
+    if (user?.role === 'admin') {
+      return '/admin/dashboard';
+    }
+    return '/dashboard';
+  };
+
   return (
     <div className="flex flex-col h-full w-64 glass-card border-r border-blue-500/20 bg-gradient-to-b from-blue-950/30 to-purple-950/30">
       {/* User Panel Logo */}
       <div className="flex items-center px-6 py-4 border-b border-blue-500/20">
-        <div className="flex items-center space-x-3">
+        <Link to={handleLogoClick()} className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Users className="text-white w-5 h-5" />
           </div>
@@ -50,7 +56,7 @@ export function Sidebar() {
             <span className="font-bold text-lg gradient-text">User Panel</span>
             <p className="text-xs text-blue-400">BlockEvidence</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}

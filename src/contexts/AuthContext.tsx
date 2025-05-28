@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -55,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Determine role based on email for demo purposes
     const isAdmin = email.includes('admin');
-    const role = isAdmin ? 'admin' : 'user';
+    const role: 'admin' | 'user' = isAdmin ? 'admin' : 'user';
     
     const mockUser = {
       id: '1',
@@ -63,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: isAdmin ? 'System Administrator' : 'John Doe',
       role: role,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      sector: isAdmin ? 'Technology' : 'Legal',
+      sector: isAdmin ? 'Technology' as const : 'Legal' as const,
       organization: isAdmin ? 'BlockEvidence Corp' : 'Legal Associates Inc'
     };
     
@@ -82,9 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: '1',
       email,
       name,
-      role: 'user',
+      role: 'user' as const,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      sector: 'Other',
+      sector: 'Other' as const,
       organization: 'New Organization'
     };
     

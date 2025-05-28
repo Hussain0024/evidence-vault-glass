@@ -62,7 +62,7 @@ export function AppRoutes() {
         </PublicRoute>
       } />
       
-      {/* User Routes - Available to all authenticated users */}
+      {/* User Routes - Available to users only */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <UserDashboard />
@@ -105,13 +105,6 @@ export function AppRoutes() {
           <EvidenceDetail />
         </ProtectedRoute>
       } />
-      
-      {/* Team Management - User specific */}
-      <Route path="/team" element={
-        <ProtectedRoute>
-          <TeamManagement />
-        </ProtectedRoute>
-      } />
 
       {/* Admin Only Routes */}
       <Route path="/admin/dashboard" element={
@@ -132,6 +125,11 @@ export function AppRoutes() {
       <Route path="/admin/audit" element={
         <ProtectedRoute adminOnly>
           <AuditLog />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/team" element={
+        <ProtectedRoute adminOnly>
+          <TeamManagement />
         </ProtectedRoute>
       } />
       <Route path="/admin/evidence" element={
