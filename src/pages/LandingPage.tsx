@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,11 @@ import {
   ArrowRight,
   Zap,
   Globe,
-  TrendingUp
+  TrendingUp,
+  Eye,
+  Clock,
+  Database,
+  Fingerprint
 } from 'lucide-react';
 
 export function LandingPage() {
@@ -36,22 +39,61 @@ export function LandingPage() {
     {
       icon: Shield,
       title: "Blockchain Security",
-      description: "Immutable evidence storage with cryptographic proof of integrity"
+      description: "Immutable evidence storage with cryptographic proof of integrity and tamper-proof verification"
     },
     {
       icon: Lock,
       title: "Zero-Knowledge Privacy",
-      description: "Advanced encryption ensuring only authorized parties access evidence"
+      description: "Advanced encryption ensuring only authorized parties access evidence while maintaining privacy"
     },
     {
       icon: FileText,
       title: "Smart Contracts",
-      description: "Automated evidence verification and chain of custody tracking"
+      description: "Automated evidence verification and chain of custody tracking with transparent audit trails"
     },
     {
       icon: Users,
       title: "Multi-Party Verification",
-      description: "Collaborative evidence management with role-based permissions"
+      description: "Collaborative evidence management with role-based permissions and multi-signature validation"
+    },
+    {
+      icon: Eye,
+      title: "Real-time Monitoring",
+      description: "Live tracking of evidence status, verification progress, and system health metrics"
+    },
+    {
+      icon: Clock,
+      title: "Timestamping",
+      description: "Precise blockchain-based timestamps proving when evidence was created and modified"
+    },
+    {
+      icon: Database,
+      title: "Distributed Storage",
+      description: "Evidence distributed across multiple nodes ensuring availability and redundancy"
+    },
+    {
+      icon: Fingerprint,
+      title: "Digital Fingerprinting",
+      description: "Unique cryptographic hashes for each piece of evidence ensuring authenticity"
+    }
+  ];
+
+  const aboutPoints = [
+    {
+      title: "Mission",
+      description: "To revolutionize evidence management through blockchain technology, ensuring absolute integrity and trust in digital evidence for legal, healthcare, and enterprise sectors."
+    },
+    {
+      title: "Vision",
+      description: "A world where digital evidence is universally trusted, instantly verifiable, and permanently secured through decentralized blockchain infrastructure."
+    },
+    {
+      title: "Technology",
+      description: "Built on cutting-edge blockchain protocols with zero-knowledge proofs, smart contracts, and distributed storage for maximum security and privacy."
+    },
+    {
+      title: "Impact",
+      description: "Serving over 500+ organizations globally, securing millions of evidence files with 99.9% verification success rate and forensic-grade authenticity."
     }
   ];
 
@@ -115,7 +157,7 @@ export function LandingPage() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - Updated to remove pricing */}
       <nav className="relative z-10 p-6" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -128,6 +170,7 @@ export function LandingPage() {
             <Button 
               variant="ghost" 
               className="text-white hover:text-blue-400"
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
               aria-label="View platform features"
             >
               Features
@@ -135,13 +178,7 @@ export function LandingPage() {
             <Button 
               variant="ghost" 
               className="text-white hover:text-blue-400"
-              aria-label="View pricing plans"
-            >
-              Pricing
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="text-white hover:text-blue-400"
+              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
               aria-label="Learn about BlockEvidence"
             >
               About
@@ -206,16 +243,42 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section id="about" className="relative z-10 py-20 px-6" aria-labelledby="about-heading">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 id="about-heading" className="text-4xl font-bold gradient-text mb-6">
+              About BlockEvidence
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Leading the revolution in digital evidence management through innovative blockchain technology, 
+              ensuring trust, security, and transparency for organizations worldwide.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {aboutPoints.map((point, index) => (
+              <Card key={index} className="glass-card hover:scale-105 transition-all duration-300">
+                <CardContent className="p-6">
+                  <h3 className="text-2xl font-semibold gradient-text mb-4">{point.title}</h3>
+                  <p className="text-gray-300 leading-relaxed">{point.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="relative z-10 py-20 px-6" aria-labelledby="features-heading">
+      <section id="features" className="relative z-10 py-20 px-6" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 id="features-heading" className="text-4xl font-bold gradient-text mb-6">
-              Built for the Future of Evidence
+              Comprehensive Feature Set
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Leveraging cutting-edge blockchain technology to provide unparalleled security, 
-              transparency, and trust in digital evidence management.
+              Advanced blockchain capabilities designed for enterprise-grade evidence management, 
+              forensic integrity, and regulatory compliance across all industries.
             </p>
           </div>
 

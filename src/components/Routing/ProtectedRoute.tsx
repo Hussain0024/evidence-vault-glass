@@ -34,8 +34,8 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Use different layouts based on user role
-  const LayoutComponent = user.role === 'admin' ? AdminLayout : AppLayout;
+  // Fix: Use AdminLayout only for admin routes, AppLayout for user routes
+  const LayoutComponent = adminOnly ? AdminLayout : AppLayout;
 
   return (
     <LayoutComponent>
