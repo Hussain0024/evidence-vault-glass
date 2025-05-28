@@ -34,17 +34,12 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to="/login" replace />;
   }
 
-  // Admin users trying to access non-admin routes should stay on those routes
-  // Only redirect if they're on the root dashboard and they're admin
-  if (!adminOnly && !isAdminRoute && user.role === 'admin' && location.pathname === '/dashboard') {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-
   // Regular users trying to access admin routes should be redirected to user dashboard
   if ((adminOnly || isAdminRoute) && user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Admin users can access both admin and user routes
   // Use AdminLayout for admin routes, AppLayout for user routes
   const LayoutComponent = isAdminRoute || adminOnly ? AdminLayout : AppLayout;
 

@@ -25,15 +25,16 @@ import { LegalSector } from "@/pages/UseCases/LegalSector";
 import { HealthcareSector } from "@/pages/UseCases/HealthcareSector";
 import { FinanceSector } from "@/pages/UseCases/FinanceSector";
 import { GovernmentSector } from "@/pages/UseCases/GovernmentSector";
+import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Landing Page - Root Route */}
+      {/* Landing Page - Public Route */}
       <Route path="/" element={<LandingPage />} />
       
-      {/* Use Case Pages */}
+      {/* Use Case Pages - Public */}
       <Route path="/use-cases/legal" element={<LegalSector />} />
       <Route path="/use-cases/healthcare" element={<HealthcareSector />} />
       <Route path="/use-cases/finance" element={<FinanceSector />} />
@@ -61,7 +62,7 @@ export function AppRoutes() {
         </PublicRoute>
       } />
       
-      {/* User Routes - Separate from Admin */}
+      {/* User Routes - Available to all authenticated users */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <UserDashboard />
@@ -82,8 +83,13 @@ export function AppRoutes() {
           <EvidenceTracking />
         </ProtectedRoute>
       } />
+      <Route path="/audit" element={
+        <ProtectedRoute>
+          <AuditLog />
+        </ProtectedRoute>
+      } />
       
-      {/* Evidence Management Routes */}
+      {/* Evidence Management Routes - User specific */}
       <Route path="/upload" element={
         <ProtectedRoute>
           <EvidenceUpload />
@@ -100,7 +106,7 @@ export function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      {/* Team Management */}
+      {/* Team Management - User specific */}
       <Route path="/team" element={
         <ProtectedRoute>
           <TeamManagement />

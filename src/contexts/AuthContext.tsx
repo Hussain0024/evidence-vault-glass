@@ -61,9 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: '1',
       email,
       name: isAdmin ? 'System Administrator' : 'John Doe',
-      role: role as const,
+      role: role,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      sector: isAdmin ? 'Technology' as const : 'Legal' as const,
+      sector: isAdmin ? 'Technology' : 'Legal',
       organization: isAdmin ? 'BlockEvidence Corp' : 'Legal Associates Inc'
     };
     
@@ -82,9 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: '1',
       email,
       name,
-      role: 'user' as const,
+      role: 'user',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      sector: 'Other' as const,
+      sector: 'Other',
       organization: 'New Organization'
     };
     
