@@ -34,12 +34,13 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect admin users from regular routes to admin dashboard
-  if (!adminOnly && !isAdminRoute && user.role === 'admin') {
+  // Admin users trying to access non-admin routes should stay on those routes
+  // Only redirect if they're on the root dashboard and they're admin
+  if (!adminOnly && !isAdminRoute && user.role === 'admin' && location.pathname === '/dashboard') {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  // Redirect non-admin users away from admin routes
+  // Regular users trying to access admin routes should be redirected to user dashboard
   if ((adminOnly || isAdminRoute) && user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }

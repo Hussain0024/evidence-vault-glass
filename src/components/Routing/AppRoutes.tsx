@@ -21,6 +21,10 @@ import { EvidenceList } from "@/pages/EvidenceList";
 import { EvidenceDetail } from "@/pages/EvidenceDetail";
 import { AdminUserManagement } from "@/pages/AdminUserManagement";
 import { AdminSystemSettings } from "@/pages/AdminSystemSettings";
+import { LegalSector } from "@/pages/UseCases/LegalSector";
+import { HealthcareSector } from "@/pages/UseCases/HealthcareSector";
+import { FinanceSector } from "@/pages/UseCases/FinanceSector";
+import { GovernmentSector } from "@/pages/UseCases/GovernmentSector";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
@@ -28,6 +32,12 @@ export function AppRoutes() {
     <Routes>
       {/* Landing Page - Root Route */}
       <Route path="/" element={<LandingPage />} />
+      
+      {/* Use Case Pages */}
+      <Route path="/use-cases/legal" element={<LegalSector />} />
+      <Route path="/use-cases/healthcare" element={<HealthcareSector />} />
+      <Route path="/use-cases/finance" element={<FinanceSector />} />
+      <Route path="/use-cases/government" element={<GovernmentSector />} />
       
       {/* Public Routes */}
       <Route path="/login" element={

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -27,17 +28,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check for stored auth token
     const token = localStorage.getItem('auth-token');
-    if (token) {
+    const userRole = localStorage.getItem('user-role');
+    if (token && userRole) {
       // Simulate API call to verify token
       setTimeout(() => {
         setUser({
           id: '1',
-          email: 'admin@blockevidence.com',
-          name: 'System Administrator',
-          role: 'admin',
+          email: userRole === 'admin' ? 'admin@blockevidence.com' : 'user@blockevidence.com',
+          name: userRole === 'admin' ? 'System Administrator' : 'John Doe',
+          role: userRole as 'admin' | 'user',
           avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-          sector: 'Technology',
-          organization: 'BlockEvidence Corp'
+          sector: userRole === 'admin' ? 'Technology' : 'Legal',
+          organization: userRole === 'admin' ? 'BlockEvidence Corp' : 'Legal Associates Inc'
         });
         setIsLoading(false);
       }, 1000);
@@ -53,12 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Determine role based on email for demo purposes
     const isAdmin = email.includes('admin');
+    const role = isAdmin ? 'admin' : 'user';
     
     const mockUser = {
       id: '1',
       email,
       name: isAdmin ? 'System Administrator' : 'John Doe',
-      role: isAdmin ? 'admin' as const : 'user' as const,
+      role: role as const,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
       sector: isAdmin ? 'Technology' as const : 'Legal' as const,
       organization: isAdmin ? 'BlockEvidence Corp' : 'Legal Associates Inc'
@@ -66,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setUser(mockUser);
     localStorage.setItem('auth-token', 'mock-jwt-token');
+    localStorage.setItem('user-role', role);
     setIsLoading(false);
   };
 
@@ -86,12 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setUser(mockUser);
     localStorage.setItem('auth-token', 'mock-jwt-token');
+    localStorage.setItem('user-role', 'user');
     setIsLoading(false);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('auth-token');
+    localStorage.removeItem('user-role');
   };
 
   return (

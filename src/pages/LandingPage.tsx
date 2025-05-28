@@ -1,14 +1,24 @@
-
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { Shield, Upload, Search, Users, CheckCircle, Clock, Lock, Globe } from 'lucide-react';
+import { Shield, Upload, Search, Users, CheckCircle, Clock, Lock, Globe, ChevronDown, ChevronUp } from 'lucide-react';
 
 export function LandingPage() {
+  const [expandedUseCases, setExpandedUseCases] = useState<number[]>([]);
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const toggleUseCase = (index: number) => {
+    setExpandedUseCases(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
   };
 
   const features = [
@@ -49,25 +59,33 @@ export function LandingPage() {
       sector: 'Legal',
       icon: '⚖️',
       description: 'Digital evidence for litigation, contracts, and legal documentation with court-admissible verification.',
-      color: 'border-blue-500/30 bg-blue-500/10'
+      detailedDescription: 'Comprehensive legal evidence management including case files, depositions, contracts, and court documents. Our blockchain verification ensures all evidence meets legal standards for admissibility.',
+      color: 'border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20',
+      link: '/use-cases/legal'
     },
     {
       sector: 'Healthcare',
       icon: '🏥',
       description: 'Medical records, research data, and patient information with HIPAA-compliant security measures.',
-      color: 'border-green-500/30 bg-green-500/10'
+      detailedDescription: 'Secure management of patient records, medical imaging, clinical trial data, and research documentation. Built-in HIPAA compliance ensures patient privacy while maintaining data integrity.',
+      color: 'border-green-500/30 bg-green-500/10 hover:bg-green-500/20',
+      link: '/use-cases/healthcare'
     },
     {
       sector: 'Finance',
       icon: '💰',
       description: 'Financial transactions, audit trails, and compliance documentation with regulatory standards.',
-      color: 'border-yellow-500/30 bg-yellow-500/10'
+      detailedDescription: 'Complete financial evidence management including transaction records, audit documentation, compliance reports, and regulatory filings. Meet SOX, GDPR, and other financial regulations.',
+      color: 'border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20',
+      link: '/use-cases/finance'
     },
     {
       sector: 'Government',
       icon: '🏛️',
       description: 'Public records, investigations, and official documentation with transparency and accountability.',
-      color: 'border-red-500/30 bg-red-500/10'
+      detailedDescription: 'Transparent government evidence management for public records, investigation files, policy documents, and inter-agency communications. Enhance public trust through verifiable documentation.',
+      color: 'border-red-500/30 bg-red-500/10 hover:bg-red-500/20',
+      link: '/use-cases/government'
     }
   ];
 
@@ -106,9 +124,9 @@ export function LandingPage() {
 
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild className="text-gray-300 hover:text-white">
-              <Link to="/login">Login</Link>
+              <Link to="/login" aria-label="Login to your account">Login</Link>
             </Button>
-            <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+            <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" aria-label="Get started with BlockEvidence">
               <Link to="/register">Get Started</Link>
             </Button>
           </div>
@@ -131,13 +149,13 @@ export function LandingPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
-            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all">
+            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all" aria-label="Start securing evidence">
               <Link to="/register">
                 <Upload className="w-5 h-5 mr-2" />
                 Start Securing Evidence
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="border-white/20 hover:bg-white/10">
+            <Button size="lg" variant="outline" asChild className="border-white/20 hover:bg-white/10" aria-label="Access your evidence vault">
               <Link to="/login">
                 <Shield className="w-5 h-5 mr-2" />
                 Access Your Vault
@@ -243,7 +261,7 @@ export function LandingPage() {
                   <p className="text-gray-400 mb-6">
                     Join thousands of organizations worldwide who trust BlockEvidence for their critical evidence management needs.
                   </p>
-                  <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                  <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" aria-label="Start your free trial">
                     <Link to="/register">Start Your Free Trial</Link>
                   </Button>
                 </div>
@@ -267,13 +285,68 @@ export function LandingPage() {
             {useCases.map((useCase, index) => (
               <div 
                 key={index} 
-                className={`p-6 rounded-lg border ${useCase.color} hover:border-opacity-50 transition-all`}
+                className={`p-6 rounded-lg border ${useCase.color} transition-all cursor-pointer`}
+                onClick={() => toggleUseCase(index)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleUseCase(index);
+                  }
+                }}
+                aria-expanded={expandedUseCases.includes(index)}
+                aria-label={`Toggle ${useCase.sector} sector details`}
               >
-                <div className="flex items-start space-x-4">
-                  <div className="text-4xl">{useCase.icon}</div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">{useCase.sector} Sector</h3>
-                    <p className="text-gray-400">{useCase.description}</p>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4 flex-1">
+                    <div className="text-4xl">{useCase.icon}</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-white mb-2">{useCase.sector} Sector</h3>
+                      <p className="text-gray-400 mb-3">{useCase.description}</p>
+                      
+                      {expandedUseCases.includes(index) && (
+                        <div className="space-y-4 animate-fade-in">
+                          <p className="text-gray-300">{useCase.detailedDescription}</p>
+                          <div className="flex space-x-4">
+                            <Button 
+                              size="sm" 
+                              asChild 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Link 
+                                to={useCase.link}
+                                aria-label={`Learn more about ${useCase.sector} sector solutions`}
+                              >
+                                Learn More
+                              </Link>
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              asChild 
+                              className="border-white/20 hover:bg-white/10"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Link 
+                                to="/register"
+                                aria-label={`Get started with ${useCase.sector} sector solutions`}
+                              >
+                                Get Started
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    {expandedUseCases.includes(index) ? (
+                      <ChevronUp className="w-5 h-5 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-gray-400" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -290,10 +363,10 @@ export function LandingPage() {
             Join thousands of organizations worldwide in revolutionizing their evidence management process with blockchain security.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" aria-label="Start free trial">
               <Link to="/register">Start Free Trial</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="border-white/20 hover:bg-white/10">
+            <Button size="lg" variant="outline" asChild className="border-white/20 hover:bg-white/10" aria-label="Sign in to existing account">
               <Link to="/login">Sign In</Link>
             </Button>
           </div>
