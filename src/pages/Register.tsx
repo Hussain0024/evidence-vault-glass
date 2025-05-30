@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +12,7 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const { register, user, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
@@ -33,9 +33,11 @@ export function Register() {
     try {
       await register(email, password, name);
       toast({
-        title: "Account created!",
-        description: "Welcome to BlockEvidence.",
+        title: "Account created successfully!",
+        description: "Please proceed to login with your credentials.",
       });
+      // Navigate to login page after successful registration
+      navigate('/login/user');
     } catch (error) {
       toast({
         title: "Error",
