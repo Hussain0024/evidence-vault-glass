@@ -169,7 +169,12 @@ export async function getEvidence(): Promise<EvidenceRecord[]> {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Cast the data to EvidenceRecord[] with proper type assertion
+    return (data || []).map(item => ({
+      ...item,
+      status: item.status as 'pending' | 'processing' | 'verified' | 'failed'
+    })) as EvidenceRecord[];
   } catch (error: any) {
     console.error('Fetch evidence error:', error);
     throw new Error(error.message || 'Failed to fetch evidence');
@@ -185,7 +190,12 @@ export async function getEvidenceById(id: string): Promise<EvidenceRecord | null
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Cast the data to EvidenceRecord with proper type assertion
+    return {
+      ...data,
+      status: data.status as 'pending' | 'processing' | 'verified' | 'failed'
+    } as EvidenceRecord;
   } catch (error: any) {
     console.error('Fetch evidence by ID error:', error);
     return null;

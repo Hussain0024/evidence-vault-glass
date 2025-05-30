@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,7 +56,12 @@ export function UserDashboard() {
 
       if (evidenceError) throw evidenceError;
 
-      const evidenceData = evidence || [];
+      // Cast evidence data with proper typing
+      const evidenceData = (evidence || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'processing' | 'verified' | 'failed'
+      })) as EvidenceRecord[];
+
       setStats({
         totalEvidence: evidenceData.length,
         verifiedEvidence: evidenceData.filter(e => e.status === 'verified').length,
@@ -78,14 +82,18 @@ export function UserDashboard() {
 
       if (auditError) throw auditError;
 
-      const activities: RecentActivity[] = (auditLogs || []).map(log => ({
-        id: log.id,
-        action: log.action,
-        file_name: log.details?.file_name,
-        evidence_type: log.details?.evidence_type,
-        created_at: log.created_at,
-        status: log.details?.status
-      }));
+      const activities: RecentActivity[] = (auditLogs || []).map(log => {
+        // Safely access details properties with type checking
+        const details = log.details as Record<string, any> | null;
+        return {
+          id: log.id,
+          action: log.action,
+          file_name: details?.file_name,
+          evidence_type: details?.evidence_type,
+          created_at: log.created_at,
+          status: details?.status
+        };
+      });
 
       setRecentActivity(activities);
     } catch (error) {
@@ -125,13 +133,14 @@ export function UserDashboard() {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
+          const details = payload.new.details as Record<string, any> | null;
           const newActivity: RecentActivity = {
             id: payload.new.id,
             action: payload.new.action,
-            file_name: payload.new.details?.file_name,
-            evidence_type: payload.new.details?.evidence_type,
+            file_name: details?.file_name,
+            evidence_type: details?.evidence_type,
             created_at: payload.new.created_at,
-            status: payload.new.details?.status
+            status: details?.status
           };
           
           setRecentActivity(prev => [newActivity, ...prev.slice(0, 4)]);
