@@ -157,21 +157,6 @@ Then, serve the output in the `dist` directory using your chosen static site hos
 
 ---
 
-## Screenshots
-
-Below are screenshots of the application interface for reference:
-
-![image1](image1)
-*Secure Evidence Management - Landing Page*
-
-![image2](image2)
-*About BlockEvidence - Platform Overview*
-
-![image3](image3)
-*Ready to Secure Your Digital Evidence - Call to Action & Footer*
-
----
-
 ## License
 
 This repository is licensed under the MIT License.  
