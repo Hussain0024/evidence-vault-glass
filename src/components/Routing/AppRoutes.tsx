@@ -5,6 +5,7 @@ import { PublicRoute } from "./PublicRoute";
 
 // Pages
 import { LandingPage } from "@/pages/LandingPage";
+import { DevelopersPage } from "@/pages/DevelopersPage";
 import { LoginSelect } from "@/pages/LoginSelect";
 import { AdminLogin } from "@/pages/AdminLogin";
 import { Login } from "@/pages/Login";
@@ -33,6 +34,9 @@ export function AppRoutes() {
     <Routes>
       {/* Landing Page - Public Route */}
       <Route path="/" element={<LandingPage />} />
+      
+      {/* Developers Page - Public Route */}
+      <Route path="/developers" element={<DevelopersPage />} />
       
       {/* Use Case Pages - Public */}
       <Route path="/use-cases/legal" element={<LegalSector />} />

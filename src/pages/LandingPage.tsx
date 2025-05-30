@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -387,7 +388,7 @@ export function LandingPage() {
               <p className="text-gray-400 mt-2">Blockchain-secured evidence management</p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center md:text-left">
                 <h3 className="text-white font-medium mb-4">Platform</h3>
                 <ul className="space-y-2">
@@ -406,7 +407,16 @@ export function LandingPage() {
                 </ul>
               </div>
               
-              <div className="text-center md:text-left col-span-2 md:col-span-1">
+              <div className="text-center md:text-left">
+                <h3 className="text-white font-medium mb-4">Company</h3>
+                <ul className="space-y-2">
+                  <li><Link to="/developers" className="text-gray-400 hover:text-white transition-colors">Developers</Link></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                </ul>
+              </div>
+              
+              <div className="text-center md:text-left">
                 <h3 className="text-white font-medium mb-4">Contact</h3>
                 <ul className="space-y-2">
                   <li><a href="mailto:info@blockevidence.com" className="text-gray-400 hover:text-white transition-colors">info@blockevidence.com</a></li>
