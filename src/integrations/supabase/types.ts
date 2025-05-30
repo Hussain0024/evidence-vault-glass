@@ -9,7 +9,140 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          evidence_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          evidence_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          evidence_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence: {
+        Row: {
+          blockchain_tx: string | null
+          case_number: string | null
+          created_at: string
+          description: string | null
+          evidence_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          hash_sha256: string
+          id: string
+          status: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          verification_progress: number | null
+        }
+        Insert: {
+          blockchain_tx?: string | null
+          case_number?: string | null
+          created_at?: string
+          description?: string | null
+          evidence_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          hash_sha256: string
+          id?: string
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          verification_progress?: number | null
+        }
+        Update: {
+          blockchain_tx?: string | null
+          case_number?: string | null
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          hash_sha256?: string
+          id?: string
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          verification_progress?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          organization: string | null
+          role: string
+          sector: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          organization?: string | null
+          role?: string
+          sector?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          organization?: string | null
+          role?: string
+          sector?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

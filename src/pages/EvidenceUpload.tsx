@@ -10,16 +10,20 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Upload, X, FileText, Image, Video, File } from 'lucide-react';
+import { uploadEvidence } from '@/services/evidenceService';
+import { useAuth } from '@/contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 interface UploadedFile {
   id: string;
   file: File;
   progress: number;
   status: 'uploading' | 'processing' | 'completed' | 'error';
-  blockchainTx?: string;
+  evidenceId?: string;
 }
 
 export function EvidenceUpload() {
+  const { user } = useAuth();
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,6 +32,10 @@ export function EvidenceUpload() {
     evidenceType: '',
     tags: ''
   });
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -49,7 +57,7 @@ export function EvidenceUpload() {
     }
   }, []);
 
-  const handleFiles = (fileList: File[]) => {
+  const handleFiles = async (fileList: File[]) => {
     const newFiles: UploadedFile[] = fileList.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
@@ -59,54 +67,60 @@ export function EvidenceUpload() {
 
     setFiles(prev => [...prev, ...newFiles]);
 
-    // Simulate upload process
-    newFiles.forEach(uploadedFile => {
-      simulateUpload(uploadedFile.id);
-    });
-  };
+    // Upload files one by one
+    for (const uploadedFile of newFiles) {
+      try {
+        // Simulate progress
+        const progressInterval = setInterval(() => {
+          setFiles(prev => prev.map(f => 
+            f.id === uploadedFile.id 
+              ? { ...f, progress: Math.min(f.progress + Math.random() * 15, 90) }
+              : f
+          ));
+        }, 200);
 
-  const simulateUpload = (fileId: string) => {
-    const interval = setInterval(() => {
-      setFiles(prev => prev.map(file => {
-        if (file.id === fileId) {
-          const newProgress = Math.min(file.progress + Math.random() * 15, 100);
-          
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            // Simulate blockchain processing
-            setTimeout(() => {
-              setFiles(prev => prev.map(f => 
-                f.id === fileId 
-                  ? { ...f, status: 'processing' }
-                  : f
-              ));
-              
-              // Complete after processing
-              setTimeout(() => {
-                setFiles(prev => prev.map(f => 
-                  f.id === fileId 
-                    ? { 
-                        ...f, 
-                        status: 'completed',
-                        blockchainTx: '0x' + Math.random().toString(16).substr(2, 40)
-                      }
-                    : f
-                ));
-                toast({
-                  title: "Evidence uploaded successfully",
-                  description: `${file.file.name} has been registered on the blockchain.`,
-                });
-              }, 2000);
-            }, 1000);
-            
-            return { ...file, progress: 100, status: 'uploading' };
-          }
-          
-          return { ...file, progress: newProgress };
-        }
-        return file;
-      }));
-    }, 200);
+        // Actual upload
+        const evidenceId = await uploadEvidence({
+          file: uploadedFile.file,
+          caseNumber: formData.caseNumber || undefined,
+          evidenceType: formData.evidenceType,
+          description: formData.description || undefined,
+          tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : undefined
+        });
+
+        clearInterval(progressInterval);
+        
+        // Complete upload
+        setFiles(prev => prev.map(f => 
+          f.id === uploadedFile.id 
+            ? { 
+                ...f, 
+                progress: 100, 
+                status: 'completed',
+                evidenceId
+              }
+            : f
+        ));
+
+        toast({
+          title: "Evidence uploaded successfully",
+          description: `${uploadedFile.file.name} has been submitted for blockchain verification.`,
+        });
+
+      } catch (error: any) {
+        setFiles(prev => prev.map(f => 
+          f.id === uploadedFile.id 
+            ? { ...f, status: 'error', progress: 0 }
+            : f
+        ));
+
+        toast({
+          title: "Upload failed",
+          description: error.message || 'Failed to upload evidence',
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const removeFile = (fileId: string) => {
@@ -131,9 +145,18 @@ export function EvidenceUpload() {
       return;
     }
 
+    if (!formData.evidenceType) {
+      toast({
+        title: "Evidence type required",
+        description: "Please select an evidence type.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
-      title: "Evidence package created",
-      description: "Your evidence has been submitted for blockchain registration.",
+      title: "Evidence package submitted",
+      description: "Your evidence has been submitted for processing.",
     });
   };
 
@@ -145,6 +168,67 @@ export function EvidenceUpload() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Evidence Metadata */}
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="text-white">Evidence Metadata</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="caseNumber" className="text-white">Case Number</Label>
+                <Input
+                  id="caseNumber"
+                  value={formData.caseNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, caseNumber: e.target.value }))}
+                  className="glass-button border-white/20 bg-white/5"
+                  placeholder="e.g., CASE-2024-001"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="evidenceType" className="text-white">Evidence Type *</Label>
+                <Select value={formData.evidenceType} onValueChange={(value) => setFormData(prev => ({ ...prev, evidenceType: value }))}>
+                  <SelectTrigger className="glass-button border-white/20 bg-white/5">
+                    <SelectValue placeholder="Select evidence type" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card border-white/20">
+                    <SelectItem value="document">Document</SelectItem>
+                    <SelectItem value="photo">Photograph</SelectItem>
+                    <SelectItem value="video">Video Recording</SelectItem>
+                    <SelectItem value="audio">Audio Recording</SelectItem>
+                    <SelectItem value="digital">Digital Evidence</SelectItem>
+                    <SelectItem value="physical">Physical Evidence</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="description" className="text-white">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                className="glass-button border-white/20 bg-white/5"
+                placeholder="Provide a detailed description of the evidence..."
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="tags" className="text-white">Tags</Label>
+              <Input
+                id="tags"
+                value={formData.tags}
+                onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                className="glass-button border-white/20 bg-white/5"
+                placeholder="e.g., forensic, crime-scene, witness-statement (comma separated)"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* File Upload Area */}
         <Card className="glass-card">
           <CardHeader>
@@ -243,9 +327,9 @@ export function EvidenceUpload() {
                     
                     <Progress value={uploadedFile.progress} className="h-2 mb-2" />
                     
-                    {uploadedFile.blockchainTx && (
+                    {uploadedFile.evidenceId && (
                       <p className="text-xs text-green-400 font-mono">
-                        Blockchain TX: {uploadedFile.blockchainTx}
+                        Evidence ID: {uploadedFile.evidenceId}
                       </p>
                     )}
                   </div>
@@ -255,74 +339,11 @@ export function EvidenceUpload() {
           </CardContent>
         </Card>
 
-        {/* Evidence Metadata */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-white">Evidence Metadata</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="caseNumber" className="text-white">Case Number</Label>
-                <Input
-                  id="caseNumber"
-                  value={formData.caseNumber}
-                  onChange={(e) => setFormData(prev => ({ ...prev, caseNumber: e.target.value }))}
-                  className="glass-button border-white/20 bg-white/5"
-                  placeholder="e.g., CASE-2024-001"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="evidenceType" className="text-white">Evidence Type</Label>
-                <Select value={formData.evidenceType} onValueChange={(value) => setFormData(prev => ({ ...prev, evidenceType: value }))}>
-                  <SelectTrigger className="glass-button border-white/20 bg-white/5">
-                    <SelectValue placeholder="Select evidence type" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/20">
-                    <SelectItem value="document">Document</SelectItem>
-                    <SelectItem value="photo">Photograph</SelectItem>
-                    <SelectItem value="video">Video Recording</SelectItem>
-                    <SelectItem value="audio">Audio Recording</SelectItem>
-                    <SelectItem value="digital">Digital Evidence</SelectItem>
-                    <SelectItem value="physical">Physical Evidence</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description" className="text-white">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="glass-button border-white/20 bg-white/5"
-                placeholder="Provide a detailed description of the evidence..."
-                rows={4}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="tags" className="text-white">Tags</Label>
-              <Input
-                id="tags"
-                value={formData.tags}
-                onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                className="glass-button border-white/20 bg-white/5"
-                placeholder="e.g., forensic, crime-scene, witness-statement"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="flex justify-end space-x-4">
-          <Button type="button" variant="outline" className="glass-button">
-            Save as Draft
-          </Button>
           <Button 
             type="submit" 
             className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            disabled={files.length === 0 || !formData.evidenceType}
           >
             Submit Evidence
           </Button>
