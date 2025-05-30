@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import { toast } from '@/hooks/use-toast';
 import { Upload, X, FileText, Image, Video, File } from 'lucide-react';
 import { uploadEvidence } from '@/services/evidenceService';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { SubmissionSuccessDialog } from '@/components/EvidenceSubmission/SubmissionSuccessDialog';
 
 interface UploadedFile {
   id: string;
@@ -24,8 +24,11 @@ interface UploadedFile {
 
 export function EvidenceUpload() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     caseNumber: '',
     description: '',
@@ -134,7 +137,7 @@ export function EvidenceUpload() {
     return <File className="h-8 w-8 text-gray-400" />;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (files.length === 0) {
       toast({
@@ -154,201 +157,242 @@ export function EvidenceUpload() {
       return;
     }
 
-    toast({
-      title: "Evidence package submitted",
-      description: "Your evidence has been submitted for processing.",
+    setIsSubmitting(true);
+    
+    // Wait a moment to show the submitting state
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setShowSuccessDialog(true);
+      
+      toast({
+        title: "Evidence package submitted",
+        description: "Your evidence has been submitted for processing.",
+      });
+    }, 2000);
+  };
+
+  const handleViewEvidence = () => {
+    setShowSuccessDialog(false);
+    navigate('/evidence');
+  };
+
+  const handleContinueUpload = () => {
+    setShowSuccessDialog(false);
+    // Reset the form for new uploads
+    setFiles([]);
+    setFormData({
+      caseNumber: '',
+      description: '',
+      evidenceType: '',
+      tags: ''
     });
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">Upload Evidence</h1>
-        <p className="text-gray-400 mt-1">Securely upload and register evidence on the blockchain</p>
-      </div>
+    <>
+      <div className="space-y-6 animate-fade-in">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">Upload Evidence</h1>
+          <p className="text-gray-400 mt-1">Securely upload and register evidence on the blockchain</p>
+        </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Evidence Metadata */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-white">Evidence Metadata</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="caseNumber" className="text-white">Case Number</Label>
-                <Input
-                  id="caseNumber"
-                  value={formData.caseNumber}
-                  onChange={(e) => setFormData(prev => ({ ...prev, caseNumber: e.target.value }))}
-                  className="glass-button border-white/20 bg-white/5"
-                  placeholder="e.g., CASE-2024-001"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="evidenceType" className="text-white">Evidence Type *</Label>
-                <Select value={formData.evidenceType} onValueChange={(value) => setFormData(prev => ({ ...prev, evidenceType: value }))}>
-                  <SelectTrigger className="glass-button border-white/20 bg-white/5">
-                    <SelectValue placeholder="Select evidence type" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/20">
-                    <SelectItem value="document">Document</SelectItem>
-                    <SelectItem value="photo">Photograph</SelectItem>
-                    <SelectItem value="video">Video Recording</SelectItem>
-                    <SelectItem value="audio">Audio Recording</SelectItem>
-                    <SelectItem value="digital">Digital Evidence</SelectItem>
-                    <SelectItem value="physical">Physical Evidence</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description" className="text-white">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="glass-button border-white/20 bg-white/5"
-                placeholder="Provide a detailed description of the evidence..."
-                rows={4}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="tags" className="text-white">Tags</Label>
-              <Input
-                id="tags"
-                value={formData.tags}
-                onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                className="glass-button border-white/20 bg-white/5"
-                placeholder="e.g., forensic, crime-scene, witness-statement (comma separated)"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* File Upload Area */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <Upload className="mr-2 h-5 w-5" />
-              File Upload
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-                dragActive 
-                  ? 'border-blue-500 bg-blue-500/10' 
-                  : 'border-white/20 hover:border-white/30'
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <div className="flex flex-col items-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Upload className="h-8 w-8 text-white" />
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Evidence Metadata */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-white">Evidence Metadata</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h3 className="text-lg font-medium text-white mb-2">
-                    Drop your files here or click to browse
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    Supports: PDF, Images, Videos, Documents (Max 100MB per file)
-                  </p>
+                  <Label htmlFor="caseNumber" className="text-white">Case Number</Label>
+                  <Input
+                    id="caseNumber"
+                    value={formData.caseNumber}
+                    onChange={(e) => setFormData(prev => ({ ...prev, caseNumber: e.target.value }))}
+                    className="glass-button border-white/20 bg-white/5"
+                    placeholder="e.g., CASE-2024-001"
+                  />
                 </div>
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  id="file-upload"
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      handleFiles(Array.from(e.target.files));
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="glass-button"
-                  onClick={() => document.getElementById('file-upload')?.click()}
-                >
-                  Select Files
-                </Button>
+                
+                <div>
+                  <Label htmlFor="evidenceType" className="text-white">Evidence Type *</Label>
+                  <Select value={formData.evidenceType} onValueChange={(value) => setFormData(prev => ({ ...prev, evidenceType: value }))}>
+                    <SelectTrigger className="glass-button border-white/20 bg-white/5">
+                      <SelectValue placeholder="Select evidence type" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-card border-white/20">
+                      <SelectItem value="document">Document</SelectItem>
+                      <SelectItem value="photo">Photograph</SelectItem>
+                      <SelectItem value="video">Video Recording</SelectItem>
+                      <SelectItem value="audio">Audio Recording</SelectItem>
+                      <SelectItem value="digital">Digital Evidence</SelectItem>
+                      <SelectItem value="physical">Physical Evidence</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
 
-            {/* Uploaded Files */}
-            {files.length > 0 && (
-              <div className="mt-6 space-y-4">
-                <h4 className="text-white font-medium">Uploaded Files</h4>
-                {files.map((uploadedFile) => (
-                  <div key={uploadedFile.id} className="glass-button p-4 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        {getFileIcon(uploadedFile.file)}
-                        <div>
-                          <p className="text-white font-medium text-sm">
-                            {uploadedFile.file.name}
-                          </p>
-                          <p className="text-gray-400 text-xs">
-                            {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
+              <div>
+                <Label htmlFor="description" className="text-white">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="glass-button border-white/20 bg-white/5"
+                  placeholder="Provide a detailed description of the evidence..."
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="tags" className="text-white">Tags</Label>
+                <Input
+                  id="tags"
+                  value={formData.tags}
+                  onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                  className="glass-button border-white/20 bg-white/5"
+                  placeholder="e.g., forensic, crime-scene, witness-statement (comma separated)"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* File Upload Area */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Upload className="mr-2 h-5 w-5" />
+                File Upload
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+                  dragActive 
+                    ? 'border-blue-500 bg-blue-500/10' 
+                    : 'border-white/20 hover:border-white/30'
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Upload className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">
+                      Drop your files here or click to browse
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      Supports: PDF, Images, Videos, Documents (Max 100MB per file)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    id="file-upload"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        handleFiles(Array.from(e.target.files));
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="glass-button"
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                  >
+                    Select Files
+                  </Button>
+                </div>
+              </div>
+
+              {/* Uploaded Files */}
+              {files.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  <h4 className="text-white font-medium">Uploaded Files</h4>
+                  {files.map((uploadedFile) => (
+                    <div key={uploadedFile.id} className="glass-button p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          {getFileIcon(uploadedFile.file)}
+                          <div>
+                            <p className="text-white font-medium text-sm">
+                              {uploadedFile.file.name}
+                            </p>
+                            <p className="text-gray-400 text-xs">
+                              {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge
+                            variant="outline"
+                            className={
+                              uploadedFile.status === 'completed' ? 'border-green-500 text-green-400' :
+                              uploadedFile.status === 'processing' ? 'border-yellow-500 text-yellow-400' :
+                              uploadedFile.status === 'error' ? 'border-red-500 text-red-400' :
+                              'border-blue-500 text-blue-400'
+                            }
+                          >
+                            {uploadedFile.status}
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(uploadedFile.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant="outline"
-                          className={
-                            uploadedFile.status === 'completed' ? 'border-green-500 text-green-400' :
-                            uploadedFile.status === 'processing' ? 'border-yellow-500 text-yellow-400' :
-                            uploadedFile.status === 'error' ? 'border-red-500 text-red-400' :
-                            'border-blue-500 text-blue-400'
-                          }
-                        >
-                          {uploadedFile.status}
-                        </Badge>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFile(uploadedFile.id)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      
+                      <Progress value={uploadedFile.progress} className="h-2 mb-2" />
+                      
+                      {uploadedFile.evidenceId && (
+                        <p className="text-xs text-green-400 font-mono">
+                          Evidence ID: {uploadedFile.evidenceId}
+                        </p>
+                      )}
                     </div>
-                    
-                    <Progress value={uploadedFile.progress} className="h-2 mb-2" />
-                    
-                    {uploadedFile.evidenceId && (
-                      <p className="text-xs text-green-400 font-mono">
-                        Evidence ID: {uploadedFile.evidenceId}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        <div className="flex justify-end space-x-4">
-          <Button 
-            type="submit" 
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            disabled={files.length === 0 || !formData.evidenceType}
-          >
-            Submit Evidence
-          </Button>
-        </div>
-      </form>
-    </div>
+          <div className="flex justify-end space-x-4">
+            <Button 
+              type="submit" 
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              disabled={files.length === 0 || !formData.evidenceType || isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Submitting Evidence...
+                </div>
+              ) : (
+                'Submit Evidence'
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      <SubmissionSuccessDialog
+        open={showSuccessDialog}
+        onClose={handleContinueUpload}
+        submittedFiles={files}
+        onViewEvidence={handleViewEvidence}
+      />
+    </>
   );
 }
