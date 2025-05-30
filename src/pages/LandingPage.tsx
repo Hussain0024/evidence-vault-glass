@@ -140,7 +140,7 @@ export function LandingPage() {
             <Badge className="mb-4 bg-blue-500/20 text-blue-400 border-blue-500">
               🔒 Blockchain-Secured Evidence Platform
             </Badge>
-            <h1 className="text-6xl font-bold gradient-text mb-6 animate-fade-in">
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-6 animate-fade-in">
               Secure Evidence Management
             </h1>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
