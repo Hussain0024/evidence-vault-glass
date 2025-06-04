@@ -1,13 +1,21 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, User } from 'lucide-react';
+import { Shield, User, ArrowLeft } from 'lucide-react';
 
 export function LoginSelect() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
+          <Link
+            to="/"
+            className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6 transition-colors"
+            aria-label="Back to home"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          
           <h1 className="text-4xl font-bold gradient-text mb-2">Welcome Back</h1>
           <p className="text-gray-400">Choose your login type to continue</p>
         </div>

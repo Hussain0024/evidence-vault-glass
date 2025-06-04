@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
 
 export function Register() {
   const [email, setEmail] = useState('');
@@ -51,6 +52,15 @@ export function Register() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
+          <Link
+            to="/"
+            className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6 transition-colors"
+            aria-label="Back to home"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center animate-float">
               <span className="text-white font-bold text-2xl">BE</span>
