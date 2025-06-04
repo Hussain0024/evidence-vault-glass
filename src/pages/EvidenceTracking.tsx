@@ -1,87 +1,101 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Search, Filter, Eye, Download, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Search, Eye, Download, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Navigate, Link } from 'react-router-dom';
+import { getEvidence, downloadEvidence, EvidenceRecord } from '@/services/evidenceService';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export function EvidenceTracking() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [evidenceItems, setEvidenceItems] = useState<EvidenceRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock evidence tracking data
-  const evidenceItems = [
-    {
-      id: '1',
-      filename: 'case_001_document.pdf',
-      uploadDate: '2024-01-15T10:30:00Z',
-      size: '2.4 MB',
-      type: 'document',
-      status: 'verified',
-      verificationProgress: 100,
-      blockchainHash: '0x1a2b3c4d5e6f7890abcdef1234567890',
-      verificationSteps: [
-        { step: 'File Upload', completed: true, timestamp: '2024-01-15T10:30:00Z' },
-        { step: 'Hash Generation', completed: true, timestamp: '2024-01-15T10:31:00Z' },
-        { step: 'Blockchain Registration', completed: true, timestamp: '2024-01-15T10:32:00Z' },
-        { step: 'Verification Complete', completed: true, timestamp: '2024-01-15T10:33:00Z' }
-      ]
-    },
-    {
-      id: '2',
-      filename: 'security_footage.mp4',
-      uploadDate: '2024-01-15T11:00:00Z',
-      size: '156.7 MB',
-      type: 'video',
-      status: 'processing',
-      verificationProgress: 65,
-      blockchainHash: null,
-      verificationSteps: [
-        { step: 'File Upload', completed: true, timestamp: '2024-01-15T11:00:00Z' },
-        { step: 'Hash Generation', completed: true, timestamp: '2024-01-15T11:02:00Z' },
-        { step: 'Blockchain Registration', completed: false, timestamp: null },
-        { step: 'Verification Complete', completed: false, timestamp: null }
-      ]
-    },
-    {
-      id: '3',
-      filename: 'witness_statement.pdf',
-      uploadDate: '2024-01-15T11:15:00Z',
-      size: '1.8 MB',
-      type: 'document',
-      status: 'failed',
-      verificationProgress: 25,
-      blockchainHash: null,
-      verificationSteps: [
-        { step: 'File Upload', completed: true, timestamp: '2024-01-15T11:15:00Z' },
-        { step: 'Hash Generation', completed: false, timestamp: null },
-        { step: 'Blockchain Registration', completed: false, timestamp: null },
-        { step: 'Verification Complete', completed: false, timestamp: null }
-      ]
-    },
-    {
-      id: '4',
-      filename: 'forensic_analysis.jpg',
-      uploadDate: '2024-01-15T11:30:00Z',
-      size: '8.2 MB',
-      type: 'image',
-      status: 'pending',
-      verificationProgress: 0,
-      blockchainHash: null,
-      verificationSteps: [
-        { step: 'File Upload', completed: false, timestamp: null },
-        { step: 'Hash Generation', completed: false, timestamp: null },
-        { step: 'Blockchain Registration', completed: false, timestamp: null },
-        { step: 'Verification Complete', completed: false, timestamp: null }
-      ]
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  useEffect(() => {
+    loadEvidenceData();
+    setupRealtimeSubscription();
+  }, []);
+
+  const loadEvidenceData = async () => {
+    try {
+      const data = await getEvidence();
+      setEvidenceItems(data);
+    } catch (error: any) {
+      toast({
+        title: "Error loading evidence",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  const setupRealtimeSubscription = () => {
+    const channel = supabase
+      .channel('evidence-tracking')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'evidence',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Evidence update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setEvidenceItems(prev => [payload.new as EvidenceRecord, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setEvidenceItems(prev => prev.map(item => 
+              item.id === payload.new.id ? payload.new as EvidenceRecord : item
+            ));
+          } else if (payload.eventType === 'DELETE') {
+            setEvidenceItems(prev => prev.filter(item => item.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const handleDownload = async (evidenceRecord: EvidenceRecord) => {
+    try {
+      const signedUrl = await downloadEvidence(evidenceRecord.id, evidenceRecord.file_path);
+      window.open(signedUrl, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Download failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredEvidence = evidenceItems.filter(item => {
-    const matchesSearch = item.filename.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = 
+      item.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.case_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.evidence_type.toLowerCase().includes(searchTerm.toLowerCase());
+    
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+    
     return matchesSearch && matchesStatus;
   });
 
@@ -105,18 +119,53 @@ export function EvidenceTracking() {
   };
 
   const getFileTypeIcon = (type: string) => {
-    switch (type) {
-      case 'document': return '📄';
-      case 'video': return '🎥';
-      case 'image': return '🖼️';
-      default: return '📁';
-    }
+    if (type.includes('image')) return '🖼️';
+    if (type.includes('video')) return '🎥';
+    if (type.includes('pdf') || type.includes('document')) return '📄';
+    return '📁';
   };
 
   const formatTimestamp = (timestamp: string | null) => {
     if (!timestamp) return 'Pending';
     return new Date(timestamp).toLocaleString();
   };
+
+  const getVerificationSteps = (evidence: EvidenceRecord) => {
+    const steps = [
+      { 
+        step: 'File Upload', 
+        completed: true, 
+        timestamp: evidence.created_at 
+      },
+      { 
+        step: 'Hash Generation', 
+        completed: evidence.verification_progress >= 25, 
+        timestamp: evidence.verification_progress >= 25 ? evidence.updated_at : null 
+      },
+      { 
+        step: 'Blockchain Registration', 
+        completed: evidence.verification_progress >= 75, 
+        timestamp: evidence.verification_progress >= 75 ? evidence.updated_at : null 
+      },
+      { 
+        step: 'Verification Complete', 
+        completed: evidence.status === 'verified', 
+        timestamp: evidence.status === 'verified' ? evidence.updated_at : null 
+      }
+    ];
+    return steps;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center space-x-4">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-white">Loading evidence tracking...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -193,14 +242,15 @@ export function EvidenceTracking() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <span className="text-2xl" role="img" aria-label={`File type: ${item.type}`}>
-                    {getFileTypeIcon(item.type)}
+                  <span className="text-2xl" role="img" aria-label={`File type: ${item.file_type}`}>
+                    {getFileTypeIcon(item.file_type)}
                   </span>
                   <div>
-                    <h3 className="font-medium text-white">{item.filename}</h3>
+                    <h3 className="font-medium text-white">{item.file_name}</h3>
                     <div className="flex items-center space-x-4 text-sm text-gray-400 mt-1">
-                      <span>Size: {item.size}</span>
-                      <span>Uploaded: {formatTimestamp(item.uploadDate)}</span>
+                      <span>Size: {(item.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                      <span>Uploaded: {formatTimestamp(item.created_at)}</span>
+                      {item.case_number && <span>Case: {item.case_number}</span>}
                     </div>
                   </div>
                 </div>
@@ -214,20 +264,23 @@ export function EvidenceTracking() {
                     {getStatusIcon(item.status)}
                     <span className="ml-1">{item.status}</span>
                   </Badge>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="glass-button"
-                    aria-label={`View details for ${item.filename}`}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
+                  <Link to={`/evidence/${item.id}`}>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="glass-button"
+                      aria-label={`View details for ${item.file_name}`}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </Link>
                   {item.status === 'verified' && (
                     <Button 
                       size="sm" 
                       variant="outline" 
                       className="glass-button"
-                      aria-label={`Download ${item.filename}`}
+                      onClick={() => handleDownload(item)}
+                      aria-label={`Download ${item.file_name}`}
                     >
                       <Download className="w-4 h-4" />
                     </Button>
@@ -239,30 +292,38 @@ export function EvidenceTracking() {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-400">Verification Progress</span>
-                  <span className="text-sm text-white">{item.verificationProgress}%</span>
+                  <span className="text-sm text-white">{item.verification_progress}%</span>
                 </div>
                 <Progress 
-                  value={item.verificationProgress} 
+                  value={item.verification_progress} 
                   className="h-2"
-                  aria-label={`Verification progress: ${item.verificationProgress}%`}
+                  aria-label={`Verification progress: ${item.verification_progress}%`}
                 />
               </div>
 
               {/* Blockchain Hash */}
-              {item.blockchainHash && (
+              {item.blockchain_tx && (
                 <div className="mb-4">
                   <span className="text-sm text-gray-400">Blockchain Hash: </span>
                   <code className="text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded">
-                    {item.blockchainHash}
+                    {item.blockchain_tx}
                   </code>
                 </div>
               )}
+
+              {/* SHA-256 Hash */}
+              <div className="mb-4">
+                <span className="text-sm text-gray-400">File Hash (SHA-256): </span>
+                <code className="text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded break-all">
+                  {item.hash_sha256}
+                </code>
+              </div>
 
               {/* Verification Steps */}
               <div>
                 <h4 className="text-sm font-medium text-gray-400 mb-3">Verification Timeline</h4>
                 <div className="space-y-2">
-                  {item.verificationSteps.map((step, index) => (
+                  {getVerificationSteps(item).map((step, index) => (
                     <div 
                       key={index}
                       className={`flex items-center space-x-3 text-sm ${
@@ -288,7 +349,20 @@ export function EvidenceTracking() {
       {filteredEvidence.length === 0 && (
         <Card className="glass-card">
           <CardContent className="text-center py-8">
-            <p className="text-gray-400">No evidence files found matching your search criteria.</p>
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-xl font-medium text-white mb-2">No evidence found</h3>
+            <p className="text-gray-400 mb-4">
+              {searchTerm || statusFilter !== 'all' 
+                ? 'Try adjusting your search or filter criteria.' 
+                : 'Start by uploading your first piece of evidence.'}
+            </p>
+            <Link to="/upload">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                Upload Evidence
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}

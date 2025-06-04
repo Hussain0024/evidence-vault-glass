@@ -1,83 +1,76 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, ArrowLeft } from 'lucide-react';
+import { Shield, User } from 'lucide-react';
 
 export function LoginSelect() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="text-center">
-          <Link
-            to="/"
-            className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6 transition-colors"
-            aria-label="Back to homepage"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-          
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center animate-float">
-              <span className="text-white font-bold text-2xl">BE</span>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold gradient-text">Welcome to BlockEvidence</h1>
-          <p className="mt-2 text-gray-400">Choose your access level to continue</p>
+          <h1 className="text-4xl font-bold gradient-text mb-2">Welcome Back</h1>
+          <p className="text-gray-400">Choose your login type to continue</p>
         </div>
 
         <div className="space-y-4">
-          <div className="glass-card p-6 space-y-4">
-            <h2 className="text-xl font-semibold text-white mb-4">Select Login Type</h2>
-            
-            <Link to="/login/user" className="block">
-              <div className="p-4 rounded-lg border border-blue-500/30 hover:bg-blue-500/10 transition-colors group">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <Users className="text-white w-6 h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-white group-hover:text-blue-400 transition-colors">
-                      User Access
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      Evidence management and tracking
-                    </p>
-                  </div>
+          {/* User Login */}
+          <Link to="/login/user" className="block">
+            <Button
+              variant="outline"
+              className="w-full h-16 glass-card border-blue-500/30 hover:bg-blue-500/10 transition-all duration-300 group"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <User className="text-white w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-semibold text-white">User Login</h3>
+                  <p className="text-sm text-gray-400">Access your evidence dashboard</p>
                 </div>
               </div>
-            </Link>
+            </Button>
+          </Link>
 
-            <Link to="/login/admin" className="block">
-              <div className="p-4 rounded-lg border border-red-500/30 hover:bg-red-500/10 transition-colors group">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
-                    <Shield className="text-white w-6 h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-white group-hover:text-red-400 transition-colors">
-                      Administrator Access
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      System administration and oversight
-                    </p>
-                  </div>
+          {/* Admin Login */}
+          <Link to="/login/admin" className="block">
+            <Button
+              variant="outline"
+              className="w-full h-16 glass-card border-red-500/30 hover:bg-red-500/10 transition-all duration-300 group"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Shield className="text-white w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-semibold text-white">Admin Login</h3>
+                  <p className="text-sm text-gray-400">System administration access</p>
                 </div>
               </div>
-            </Link>
+            </Button>
+          </Link>
+        </div>
+
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-gray-900 px-2 text-gray-400">New to the platform?</span>
+            </div>
           </div>
-
-          <div className="text-center">
-            <p className="text-gray-400">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                aria-label="Create a new account"
-              >
-                Sign up here
-              </Link>
-            </p>
+          
+          <div className="flex space-x-4">
+            <Link to="/register" className="flex-1">
+              <Button variant="ghost" className="w-full text-blue-400 hover:text-blue-300">
+                Register as User
+              </Button>
+            </Link>
+            <Link to="/register/admin" className="flex-1">
+              <Button variant="ghost" className="w-full text-red-400 hover:text-red-300">
+                Register as Admin
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { LandingPage } from "@/pages/LandingPage";
 import { DevelopersPage } from "@/pages/DevelopersPage";
 import { LoginSelect } from "@/pages/LoginSelect";
 import { AdminLogin } from "@/pages/AdminLogin";
+import { AdminRegister } from "@/pages/AdminRegister";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { UserDashboard } from "@/pages/UserDashboard";
@@ -63,6 +64,11 @@ export function AppRoutes() {
       <Route path="/register" element={
         <PublicRoute>
           <Register />
+        </PublicRoute>
+      } />
+      <Route path="/register/admin" element={
+        <PublicRoute>
+          <AdminRegister />
         </PublicRoute>
       } />
       
