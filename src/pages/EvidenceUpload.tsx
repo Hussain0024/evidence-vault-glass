@@ -13,6 +13,7 @@ import { uploadEvidence } from '@/services/evidenceService';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { SubmissionSuccessDialog } from '@/components/EvidenceSubmission/SubmissionSuccessDialog';
+import { WalletConnection } from '@/components/Blockchain/WalletConnection';
 
 interface UploadedFile {
   id: string;
@@ -29,6 +30,7 @@ export function EvidenceUpload() {
   const [dragActive, setDragActive] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [walletConnected, setWalletConnected] = useState(false);
   const [formData, setFormData] = useState({
     caseNumber: '',
     description: '',
@@ -61,6 +63,15 @@ export function EvidenceUpload() {
   }, []);
 
   const handleFiles = async (fileList: File[]) => {
+    if (!walletConnected) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet before uploading evidence.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newFiles: UploadedFile[] = fileList.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
@@ -139,6 +150,16 @@ export function EvidenceUpload() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!walletConnected) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet before submitting evidence.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (files.length === 0) {
       toast({
         title: "No files selected",
@@ -166,7 +187,7 @@ export function EvidenceUpload() {
       
       toast({
         title: "Evidence package submitted",
-        description: "Your evidence has been submitted for processing.",
+        description: "Your evidence has been submitted for blockchain processing.",
       });
     }, 2000);
   };
@@ -195,6 +216,9 @@ export function EvidenceUpload() {
           <h1 className="text-3xl font-bold gradient-text">Upload Evidence</h1>
           <p className="text-gray-400 mt-1">Securely upload and register evidence on the blockchain</p>
         </div>
+
+        {/* Wallet Connection */}
+        <WalletConnection onConnectionChange={setWalletConnected} />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Evidence Metadata */}
@@ -289,6 +313,11 @@ export function EvidenceUpload() {
                     <p className="text-gray-400 text-sm">
                       Supports: PDF, Images, Videos, Documents (Max 100MB per file)
                     </p>
+                    {!walletConnected && (
+                      <p className="text-yellow-400 text-sm mt-2">
+                        ⚠️ Connect your wallet to enable file uploads
+                      </p>
+                    )}
                   </div>
                   <input
                     type="file"
@@ -305,6 +334,7 @@ export function EvidenceUpload() {
                     type="button"
                     variant="outline"
                     className="glass-button"
+                    disabled={!walletConnected}
                     onClick={() => document.getElementById('file-upload')?.click()}
                   >
                     Select Files
@@ -372,7 +402,7 @@ export function EvidenceUpload() {
             <Button 
               type="submit" 
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-              disabled={files.length === 0 || !formData.evidenceType || isSubmitting}
+              disabled={files.length === 0 || !formData.evidenceType || isSubmitting || !walletConnected}
             >
               {isSubmitting ? (
                 <div className="flex items-center">

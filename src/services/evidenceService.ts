@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { blockchainService } from './blockchainService';
 
 export interface EvidenceUpload {
   file: File;
@@ -22,6 +22,11 @@ export interface EvidenceRecord {
   tags?: string[];
   hash_sha256: string;
   blockchain_tx?: string;
+  contract_transaction_hash?: string;
+  block_number?: number;
+  gas_used?: number;
+  transaction_fee?: string;
+  blockchain_network_id?: string;
   status: 'pending' | 'processing' | 'verified' | 'failed';
   verification_progress: number;
   created_at: string;
@@ -60,6 +65,13 @@ export async function uploadEvidence(evidenceData: EvidenceUpload): Promise<stri
 
     if (uploadError) throw uploadError;
 
+    // Get active blockchain network
+    const { data: network } = await supabase
+      .from('blockchain_networks')
+      .select('*')
+      .eq('is_active', true)
+      .single();
+
     // Create evidence record
     const { data: evidence, error: evidenceError } = await supabase
       .from('evidence')
@@ -74,6 +86,7 @@ export async function uploadEvidence(evidenceData: EvidenceUpload): Promise<stri
         description,
         tags,
         hash_sha256: fileHash,
+        blockchain_network_id: network?.id,
         status: 'pending',
         verification_progress: 0
       })
@@ -97,64 +110,95 @@ export async function uploadEvidence(evidenceData: EvidenceUpload): Promise<stri
       user_agent: navigator.userAgent
     });
 
-    // Simulate blockchain verification process
-    setTimeout(async () => {
-      try {
-        // Update to processing
-        await supabase
-          .from('evidence')
-          .update({ 
-            status: 'processing',
-            verification_progress: 50
-          })
-          .eq('id', evidence.id);
-
-        // Simulate completion
-        setTimeout(async () => {
-          const blockchainTx = '0x' + Math.random().toString(16).substring(2, 42);
-          await supabase
-            .from('evidence')
-            .update({ 
-              status: 'verified',
-              verification_progress: 100,
-              blockchain_tx: blockchainTx
-            })
-            .eq('id', evidence.id);
-
-          // Log verification completion
-          await supabase.from('audit_logs').insert({
-            user_id: user.id,
-            evidence_id: evidence.id,
-            action: 'Evidence Verified',
-            details: {
-              blockchain_tx: blockchainTx,
-              file_name: file.name
-            },
-            ip_address: 'unknown',
-            user_agent: navigator.userAgent
-          });
-
-          toast({
-            title: "Evidence verified!",
-            description: `${file.name} has been verified on the blockchain.`,
-          });
-        }, 3000);
-      } catch (error) {
-        console.error('Verification error:', error);
-        await supabase
-          .from('evidence')
-          .update({ 
-            status: 'failed',
-            verification_progress: 0
-          })
-          .eq('id', evidence.id);
-      }
-    }, 1000);
+    // Start blockchain registration process
+    registerOnBlockchain(evidence.id, fileHash, evidenceType, caseNumber);
 
     return evidence.id;
   } catch (error: any) {
     console.error('Upload error:', error);
     throw new Error(error.message || 'Upload failed');
+  }
+}
+
+async function registerOnBlockchain(
+  evidenceId: string, 
+  fileHash: string, 
+  evidenceType: string, 
+  caseNumber?: string
+) {
+  try {
+    // Update status to processing
+    await supabase
+      .from('evidence')
+      .update({ 
+        status: 'processing',
+        verification_progress: 25
+      })
+      .eq('id', evidenceId);
+
+    // Initialize blockchain service if not already done
+    if (!blockchainService.isInitialized()) {
+      await blockchainService.initialize();
+    }
+
+    // Register evidence on blockchain
+    const txResult = await blockchainService.registerEvidenceOnBlockchain(
+      fileHash,
+      evidenceType,
+      caseNumber
+    );
+
+    // Update evidence with blockchain transaction details
+    await supabase
+      .from('evidence')
+      .update({ 
+        status: 'verified',
+        verification_progress: 100,
+        blockchain_tx: txResult.hash,
+        contract_transaction_hash: txResult.hash,
+        block_number: txResult.blockNumber,
+        gas_used: parseInt(txResult.gasUsed),
+        transaction_fee: txResult.transactionFee
+      })
+      .eq('id', evidenceId);
+
+    // Log verification completion
+    await supabase.from('audit_logs').insert({
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+      evidence_id: evidenceId,
+      action: 'Evidence Verified',
+      details: {
+        blockchain_tx: txResult.hash,
+        block_number: txResult.blockNumber,
+        gas_used: txResult.gasUsed,
+        transaction_fee: txResult.transactionFee
+      },
+      ip_address: 'unknown',
+      user_agent: navigator.userAgent
+    });
+
+    toast({
+      title: "Evidence verified on blockchain!",
+      description: `Transaction: ${txResult.hash.slice(0, 10)}...`,
+    });
+
+  } catch (error: any) {
+    console.error('Blockchain registration error:', error);
+    
+    // Update status to failed
+    await supabase
+      .from('evidence')
+      .update({ 
+        status: 'failed',
+        verification_progress: 0
+      })
+      .eq('id', evidenceId);
+
+    toast({
+      title: "Blockchain verification failed",
+      description: error.message,
+      variant: "destructive",
+    });
   }
 }
 
@@ -170,7 +214,6 @@ export async function getEvidence(): Promise<EvidenceRecord[]> {
 
     if (error) throw error;
     
-    // Cast the data to EvidenceRecord[] with proper type assertion
     return (data || []).map(item => ({
       ...item,
       status: item.status as 'pending' | 'processing' | 'verified' | 'failed'
@@ -191,7 +234,6 @@ export async function getEvidenceById(id: string): Promise<EvidenceRecord | null
 
     if (error) throw error;
     
-    // Cast the data to EvidenceRecord with proper type assertion
     return {
       ...data,
       status: data.status as 'pending' | 'processing' | 'verified' | 'failed'
@@ -209,7 +251,7 @@ export async function downloadEvidence(evidenceId: string, filePath: string): Pr
 
     const { data, error } = await supabase.storage
       .from('evidence-files')
-      .createSignedUrl(filePath, 3600); // 1 hour expiry
+      .createSignedUrl(filePath, 3600);
 
     if (error) throw error;
 
@@ -227,5 +269,38 @@ export async function downloadEvidence(evidenceId: string, filePath: string): Pr
   } catch (error: any) {
     console.error('Download error:', error);
     throw new Error(error.message || 'Download failed');
+  }
+}
+
+export async function verifyEvidenceIntegrity(evidenceId: string): Promise<{
+  isValid: boolean;
+  blockchainData?: any;
+  message: string;
+}> {
+  try {
+    const evidence = await getEvidenceById(evidenceId);
+    if (!evidence) {
+      return { isValid: false, message: 'Evidence not found' };
+    }
+
+    if (!evidence.blockchain_tx) {
+      return { isValid: false, message: 'Evidence not registered on blockchain' };
+    }
+
+    // Verify evidence on blockchain
+    const blockchainData = await blockchainService.verifyEvidenceOnBlockchain(evidence.hash_sha256);
+    
+    if (!blockchainData.isRegistered) {
+      return { isValid: false, message: 'Evidence not found on blockchain' };
+    }
+
+    return {
+      isValid: true,
+      blockchainData,
+      message: 'Evidence successfully verified on blockchain'
+    };
+  } catch (error: any) {
+    console.error('Verification error:', error);
+    return { isValid: false, message: error.message || 'Verification failed' };
   }
 }

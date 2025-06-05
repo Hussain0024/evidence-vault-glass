@@ -50,10 +50,81 @@ export type Database = {
           },
         ]
       }
+      blockchain_networks: {
+        Row: {
+          chain_id: number
+          contract_address: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          rpc_url: string
+          updated_at: string
+        }
+        Insert: {
+          chain_id: number
+          contract_address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          rpc_url: string
+          updated_at?: string
+        }
+        Update: {
+          chain_id?: number
+          contract_address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          rpc_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contract_abis: {
+        Row: {
+          abi: Json
+          contract_address: string | null
+          contract_name: string
+          created_at: string
+          id: string
+          network_id: string | null
+        }
+        Insert: {
+          abi: Json
+          contract_address?: string | null
+          contract_name: string
+          created_at?: string
+          id?: string
+          network_id?: string | null
+        }
+        Update: {
+          abi?: Json
+          contract_address?: string | null
+          contract_name?: string
+          created_at?: string
+          id?: string
+          network_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_abis_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "blockchain_networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence: {
         Row: {
+          block_number: number | null
+          blockchain_network_id: string | null
           blockchain_tx: string | null
           case_number: string | null
+          contract_transaction_hash: string | null
           created_at: string
           description: string | null
           evidence_type: string
@@ -61,17 +132,22 @@ export type Database = {
           file_path: string
           file_size: number
           file_type: string
+          gas_used: number | null
           hash_sha256: string
           id: string
           status: string
           tags: string[] | null
+          transaction_fee: string | null
           updated_at: string
           user_id: string
           verification_progress: number | null
         }
         Insert: {
+          block_number?: number | null
+          blockchain_network_id?: string | null
           blockchain_tx?: string | null
           case_number?: string | null
+          contract_transaction_hash?: string | null
           created_at?: string
           description?: string | null
           evidence_type: string
@@ -79,17 +155,22 @@ export type Database = {
           file_path: string
           file_size: number
           file_type: string
+          gas_used?: number | null
           hash_sha256: string
           id?: string
           status?: string
           tags?: string[] | null
+          transaction_fee?: string | null
           updated_at?: string
           user_id: string
           verification_progress?: number | null
         }
         Update: {
+          block_number?: number | null
+          blockchain_network_id?: string | null
           blockchain_tx?: string | null
           case_number?: string | null
+          contract_transaction_hash?: string | null
           created_at?: string
           description?: string | null
           evidence_type?: string
@@ -97,15 +178,25 @@ export type Database = {
           file_path?: string
           file_size?: number
           file_type?: string
+          gas_used?: number | null
           hash_sha256?: string
           id?: string
           status?: string
           tags?: string[] | null
+          transaction_fee?: string | null
           updated_at?: string
           user_id?: string
           verification_progress?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "evidence_blockchain_network_id_fkey"
+            columns: ["blockchain_network_id"]
+            isOneToOne: false
+            referencedRelation: "blockchain_networks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
