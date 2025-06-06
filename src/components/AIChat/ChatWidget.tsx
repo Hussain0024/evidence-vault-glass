@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, AlertCircle } from 'lucide-react';
+import { aiChatService } from '@/services/aiChatService';
+import { toast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -12,17 +14,19 @@ interface Message {
   content: string;
   timestamp: Date;
   isLoading?: boolean;
+  isError?: boolean;
 }
 
 export function ChatWidget() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'assistant',
-      content: `Hello ${user?.name}! I'm your AI assistant. I can help you with evidence management, blockchain verification, and answer questions about the platform. How can I assist you today?`,
+      content: `Hello ${user?.name}! I'm your AI assistant for BlockEvidence. I can help you with evidence management, blockchain verification, team collaboration, and answer questions about the platform. How can I assist you today?`,
       timestamp: new Date()
     }
   ]);
@@ -36,9 +40,18 @@ export function ChatWidget() {
     scrollToBottom();
   }, [messages]);
 
+  const getConversationHistory = () => {
+    return messages
+      .filter(msg => !msg.isLoading && !msg.isError)
+      .map(msg => ({
+        role: msg.type,
+        content: msg.content
+      }));
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -57,40 +70,43 @@ export function ChatWidget() {
 
     setMessages(prev => [...prev, userMessage, loadingMessage]);
     setMessage('');
+    setIsTyping(true);
 
-    // Simulate AI response with proper loading state
-    setTimeout(() => {
+    try {
+      console.log('Sending message to AI:', userMessage.content);
+      const conversationHistory = getConversationHistory();
+      const aiResponse = await aiChatService.sendMessage(userMessage.content, conversationHistory);
+
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now() + 2).toString(),
         type: 'assistant',
-        content: getAIResponse(userMessage.content),
+        content: aiResponse,
         timestamp: new Date()
       };
-      
-      setMessages(prev => prev.slice(0, -1).concat(assistantMessage));
-    }, 1500);
-  };
 
-  const getAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('upload') || lowerMessage.includes('evidence')) {
-      return "To upload evidence, navigate to the Upload page from the sidebar. Make sure your files are in supported formats (PDF, JPG, PNG, MP4). The system will automatically generate blockchain hashes for verification.";
+      setMessages(prev => prev.slice(0, -1).concat(assistantMessage));
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        type: 'assistant',
+        content: 'I apologize, but I encountered an error. Please try again or contact support if the issue persists.',
+        timestamp: new Date(),
+        isError: true
+      };
+
+      setMessages(prev => prev.slice(0, -1).concat(errorMessage));
+      
+      toast({
+        title: "AI Chat Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTyping(false);
     }
-    
-    if (lowerMessage.includes('blockchain') || lowerMessage.includes('verification')) {
-      return "Blockchain verification ensures the integrity of your evidence. Once uploaded, files are hashed and registered on the blockchain. You can track verification progress on the Evidence Tracking page.";
-    }
-    
-    if (lowerMessage.includes('team') || lowerMessage.includes('invite')) {
-      return "You can manage team members from the Team Management page. Admin users can invite new members, assign roles (user, auditor, admin), and manage permissions.";
-    }
-    
-    if (lowerMessage.includes('audit') || lowerMessage.includes('log')) {
-      return "The Audit Log provides a comprehensive view of all system activities. You can search, filter, and export audit trails for compliance purposes.";
-    }
-    
-    return "I'm here to help! You can ask me about evidence upload, blockchain verification, team management, audit logs, or any other platform features. What would you like to know more about?";
   };
 
   return (
@@ -115,6 +131,11 @@ export function ChatWidget() {
                 <CardTitle className="text-white flex items-center">
                   <Bot className="w-5 h-5 mr-2 text-blue-400" />
                   AI Assistant
+                  {isTyping && (
+                    <span className="ml-2 text-xs text-blue-400 animate-pulse">
+                      typing...
+                    </span>
+                  )}
                 </CardTitle>
                 <Button
                   variant="ghost"
@@ -140,6 +161,8 @@ export function ChatWidget() {
                       className={`max-w-xs rounded-lg p-3 ${
                         msg.type === 'user'
                           ? 'bg-blue-500 text-white'
+                          : msg.isError
+                          ? 'bg-red-500/20 text-red-300 border border-red-500/30'
                           : 'bg-white/10 text-gray-100'
                       }`}
                       role="article"
@@ -147,7 +170,13 @@ export function ChatWidget() {
                     >
                       <div className="flex items-start space-x-2">
                         {msg.type === 'assistant' && (
-                          <Bot className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                          <div className="flex-shrink-0 mt-0.5">
+                            {msg.isError ? (
+                              <AlertCircle className="w-4 h-4 text-red-400" />
+                            ) : (
+                              <Bot className="w-4 h-4 text-blue-400" />
+                            )}
+                          </div>
                         )}
                         {msg.type === 'user' && (
                           <User className="w-4 h-4 text-white mt-0.5 flex-shrink-0" />
@@ -160,7 +189,7 @@ export function ChatWidget() {
                               <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
                             </div>
                           ) : (
-                            <p className="text-sm">{msg.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                           )}
                         </div>
                       </div>
@@ -181,14 +210,16 @@ export function ChatWidget() {
                   <Input
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Ask me anything..."
+                    placeholder="Ask me anything about BlockEvidence..."
                     className="flex-1 glass-button border-white/20 bg-white/5"
                     aria-label="Type your message"
+                    disabled={isTyping}
                   />
                   <Button
                     type="submit"
                     size="sm"
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    disabled={!message.trim() || isTyping}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-50"
                     aria-label="Send message"
                   >
                     <Send className="w-4 h-4" />
