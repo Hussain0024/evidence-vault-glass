@@ -14,7 +14,6 @@
 - [Usage](#usage)
 - [Deployment](#deployment)
 - [Developer](#developer)
-- [Screenshots](#screenshots)
 - [License](#license)
 
 ---
